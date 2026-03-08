@@ -1,7 +1,7 @@
 PYTHON ?= python3
 PYTHONPATH := .
 
-.PHONY: up down run run-docker test test-docker seed seed-docker ingest ingest-docker format
+.PHONY: up down run run-docker test test-docker seed seed-docker ingest ingest-docker format frontend-install frontend-dev frontend-build
 
 up:
 	docker compose up -d postgres redis
@@ -35,3 +35,12 @@ ingest-docker:
 
 format:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m ruff format .
+
+frontend-install:
+	cd frontend && npm install
+
+frontend-dev:
+	cd frontend && npm run dev
+
+frontend-build:
+	cd frontend && npm run build

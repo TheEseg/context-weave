@@ -31,15 +31,19 @@ ContextWeave uses:
 
 `POST /chat` validates the request, loads or creates the session, builds a context pack from Redis and PostgreSQL, generates a grounded response, persists both messages, refreshes short-term memory, updates the summary, and stores newly extracted facts.
 
+The browser demo adds a lightweight frontend layer on top of that flow. A chat panel drives the conversation, while a context inspector shows the summary, extracted facts, retrieved chunks, and runtime metadata that make each response context-aware.
+
 More detail:
 
 - [`docs/architecture.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/architecture.md)
 - [`docs/data-model.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/data-model.md)
 - [`docs/evolution.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/evolution.md)
+- [`docs/frontend.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/frontend.md)
 
 ## MVP Scope
 
 - FastAPI app with `GET /health` and `POST /chat`
+- React + Vite frontend demo with a context inspector
 - PostgreSQL persistence for sessions, messages, facts, documents, and chunks
 - Redis working memory
 - sample document ingestion from [`examples/sample_documents`](/Users/ivanesegovic/Documents/Codex/context-weave/examples/sample_documents)
@@ -90,10 +94,21 @@ make run-docker
 
 The API will be available at [http://localhost:8000](http://localhost:8000).
 
+### Frontend Demo
+
+```bash
+cp frontend/.env.example frontend/.env
+make frontend-install
+make frontend-dev
+```
+
+The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, and debug metadata behind the conversation.
+
 ## Main Endpoints
 
 - `GET /health`
 - `POST /chat`
+- `GET /sessions/{session_id}/context`
 
 Example:
 
@@ -119,6 +134,12 @@ Docker:
 
 ```bash
 make test-docker
+```
+
+Frontend build check:
+
+```bash
+make frontend-build
 ```
 
 ## Roadmap

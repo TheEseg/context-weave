@@ -15,6 +15,7 @@ ContextWeave is a pragmatic layered memory architecture for AI applications. The
 
 ## Components
 
+- Frontend demo layer: React + Vite interface for chat and context inspection
 - API layer: request validation and dependency wiring
 - Chat service: orchestration of persistence, memory updates, and provider calls
 - Redis memory store: recent messages, summaries, and task state
@@ -30,3 +31,7 @@ ContextWeave is a pragmatic layered memory architecture for AI applications. The
 - Prefer deterministic behavior for local demos and tests.
 - Preserve clean seams for future async and service-level evolution.
 - Optimize for clarity, testability, and a credible upgrade path.
+
+## Demo Interaction
+
+The frontend demo calls `GET /health`, `POST /chat`, and `GET /sessions/{session_id}/context`. The chat panel makes the conversation visible, while the context inspector exposes the summary, facts, chunks, and task state that explain why the latest response is context-aware.

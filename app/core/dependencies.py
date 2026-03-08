@@ -10,6 +10,7 @@ from app.retrieval.retriever import KeywordRetriever
 from app.services.chat_service import ChatService
 from app.services.ingestion_service import IngestionService
 from app.services.llm_provider import build_llm_provider
+from app.services.session_inspector_service import SessionInspectorService
 
 
 def get_memory_store(settings: Settings = Depends(get_settings)) -> RedisMemoryStore:
@@ -44,3 +45,16 @@ def get_ingestion_service(
 ) -> IngestionService:
     return IngestionService(db=db, retrieval_limit=settings.retrieval_limit)
 
+
+def get_session_inspector_service(
+    settings: Settings = Depends(get_settings),
+    db=Depends(get_db),
+    memory_store: RedisMemoryStore = Depends(get_memory_store),
+) -> SessionInspectorService:
+    retriever = KeywordRetriever(limit=settings.retrieval_limit)
+    context_builder = ContextBuilder(
+        memory_store=memory_store,
+        retriever=retriever,
+        recent_limit=settings.recent_message_limit,
+    )
+    return SessionInspectorService(db=db, memory_store=memory_store, context_builder=context_builder)

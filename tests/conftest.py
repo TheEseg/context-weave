@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import Settings
-from app.core.dependencies import get_chat_service
+from app.core.dependencies import get_chat_service, get_db, get_memory_store, get_session_inspector_service
 from app.db.base import Base
 from app.memory.context_builder import ContextBuilder
 from app.memory.fact_extractor import FactExtractor
@@ -19,6 +19,7 @@ from app.memory.summarizer import SessionSummarizer
 from app.retrieval.retriever import KeywordRetriever
 from app.services.chat_service import ChatService
 from app.services.llm_provider import MockLLMProvider
+from app.services.session_inspector_service import SessionInspectorService
 
 
 @pytest.fixture()
@@ -53,6 +54,7 @@ def test_settings() -> Settings:
         REDIS_URL="redis://unused",
         LLM_PROVIDER="mock",
         DEBUG_CONTEXT=True,
+        CORS_ORIGINS="http://localhost:5173",
     )
 
 
@@ -77,9 +79,22 @@ def client(
             settings=test_settings,
         )
 
+    def override_db():
+        yield db_session
+
+    def override_memory_store() -> RedisMemoryStore:
+        return memory_store
+
+    def override_session_inspector_service() -> SessionInspectorService:
+        retriever = KeywordRetriever(limit=3)
+        context_builder = ContextBuilder(memory_store=memory_store, retriever=retriever, recent_limit=6)
+        return SessionInspectorService(db=db_session, memory_store=memory_store, context_builder=context_builder)
+
     app.dependency_overrides[get_chat_service] = override_chat_service
+    app.dependency_overrides[get_db] = override_db
+    app.dependency_overrides[get_memory_store] = override_memory_store
+    app.dependency_overrides[get_session_inspector_service] = override_session_inspector_service
     try:
         yield TestClient(app)
     finally:
         app.dependency_overrides.clear()
-

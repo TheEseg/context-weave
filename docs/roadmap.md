@@ -5,6 +5,7 @@ ContextWeave is intentionally scoped as a pragmatic reference implementation fir
 ## Phase 1 — MVP
 
 - FastAPI API surface
+- browser-based frontend demo for product validation
 - Redis working memory
 - PostgreSQL persistence
 - retrieval abstraction

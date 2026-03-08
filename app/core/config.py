@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     llm_provider: str = Field(default="mock", alias="LLM_PROVIDER")
     debug_context: bool = Field(default=False, alias="DEBUG_CONTEXT")
+    cors_origins: str = Field(default="http://localhost:5173", alias="CORS_ORIGINS")
     recent_message_limit: int = 6
     retrieval_limit: int = 3
     summary_char_limit: int = 400
@@ -27,3 +28,6 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     return Settings()
 
+
+def get_cors_origins(settings: Settings) -> list[str]:
+    return [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]
