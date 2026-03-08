@@ -1,0 +1,5 @@
+ContextWeave separates working memory from durable memory.
+Redis holds recent conversational state, session summaries, and lightweight task state.
+PostgreSQL stores messages, facts, documents, and chunks so the system can rebuild context after long gaps.
+The retrieval layer is intentionally abstract so semantic search can improve without changing the rest of the application.
+

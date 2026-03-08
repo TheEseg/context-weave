@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contextweave"
+version = "0.1.0"
+description = "ContextWeave — context continuity beyond the prompt."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "ContextWeave Contributors" }]
+dependencies = [
+  "alembic>=1.14.0",
+  "fastapi>=0.115.0",
+  "openai>=1.54.0",
+  "pgvector>=0.3.6",
+  "psycopg[binary]>=3.2.3",
+  "pydantic>=2.10.0",
+  "pydantic-settings>=2.6.1",
+  "python-dotenv>=1.0.1",
+  "redis>=5.2.0",
+  "sqlalchemy>=2.0.36",
+  "uvicorn>=0.32.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "fakeredis>=2.26.2",
+  "httpx>=0.28.1",
+  "pytest>=8.3.3",
+  "pytest-cov>=6.0.0",
+]
+
+[tool.setuptools]
+packages = [
+  "app",
+  "app.api",
+  "app.core",
+  "app.db",
+  "app.schemas",
+  "app.memory",
+  "app.retrieval",
+  "app.services",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+

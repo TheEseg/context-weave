@@ -1,0 +1,29 @@
+[
+  {
+    "session_id": "demo-session",
+    "user_id": "demo-user",
+    "turns": [
+      {
+        "role": "user",
+        "content": "The architecture uses FastAPI, Redis, and PostgreSQL."
+      },
+      {
+        "role": "assistant",
+        "content": "Stored the selected stack in ContextWeave memory."
+      },
+      {
+        "role": "user",
+        "content": "The report name is rai_occulto."
+      },
+      {
+        "role": "assistant",
+        "content": "Saved the report identifier for future turns."
+      },
+      {
+        "role": "user",
+        "content": "What stack did we choose earlier?"
+      }
+    ]
+  }
+]
+

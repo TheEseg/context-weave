@@ -1,0 +1,4 @@
+The demo implementation uses FastAPI for the HTTP API, Redis for short-term memory, and PostgreSQL for durable storage.
+This split makes the MVP easy to run locally while still representing a realistic production direction.
+Context packs combine recent messages, summaries, extracted facts, and relevant document chunks.
+
