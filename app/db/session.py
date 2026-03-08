@@ -1,14 +1,18 @@
+import os
 from collections.abc import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.config import get_settings
 from app.db.base import Base
 
 
-settings = get_settings()
-engine = create_engine(settings.database_url, future=True)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg://contextweave:contextweave@localhost:5432/contextweave",
+)
+
+engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
@@ -24,4 +28,3 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
