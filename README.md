@@ -2,11 +2,11 @@
 
 Context continuity beyond the prompt.
 
-ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the model context window.
+ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the prompt window.
 
 ## Why This Project Exists
 
-Many AI applications still treat context as whatever fits inside the current prompt. That works for short demos, but it breaks down when conversations span multiple topics, sessions, or time horizons. ContextWeave exists to show a more practical approach: keep working memory explicit, make durable memory inspectable, and build each response from a grounded context pack.
+Many AI applications still treat context as whatever fits inside the current prompt. That works for short demos, but it breaks down when conversations span multiple topics, sessions, or time horizons. ContextWeave exists to show a practical alternative: keep working memory explicit, make durable memory inspectable, and build each response from a grounded context pack.
 
 ## Problem
 
