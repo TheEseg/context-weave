@@ -10,9 +10,9 @@ ContextWeave is a pragmatic layered memory architecture for AI applications. It 
 
 ## Live Demo
 
-The frontend demo can be published to GitHub Pages at:
+Try the public demo here:
 
-- `https://<github-username>.github.io/context-weave/`
+**[ContextWeave Demo](https://theeseg.github.io/context-weave/)**
 
 GitHub Pages hosts only the static frontend. The backend remains separate and is configured through `VITE_API_BASE_URL`.
 
