@@ -1,31 +1,35 @@
 # ContextWeave
 
-**ContextWeave — context continuity beyond the prompt.**
+Context continuity beyond the prompt.
 
-ContextWeave is an open-source MVP for layered memory in AI applications. It combines short-term memory, persistent memory, retrieval, and context packing so assistants can preserve continuity across long and multi-session conversations without relying only on the model context window.
+ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the model context window.
+
+## Why This Project Exists
+
+Many AI applications still treat context as whatever fits inside the current prompt. That works for short demos, but it breaks down when conversations span multiple topics, sessions, or time horizons. ContextWeave exists to show a more practical approach: keep working memory explicit, make durable memory inspectable, and build each response from a grounded context pack.
 
 ## Problem
 
-Prompt windows are not enough for durable conversational continuity. Real applications need:
+Prompt windows alone are not enough for durable conversational continuity. Real applications need:
 
 - recent working memory for active turns
 - durable message and fact storage
 - retrieval over reference documents
 - a deterministic way to pack the right context for each response
 
-## Solution Overview
+## Solution
 
 ContextWeave uses:
 
 - Redis for recent messages, summaries, and task state
 - PostgreSQL for sessions, messages, facts, documents, and chunks
-- a retrieval abstraction that is pgvector-ready
+- a retrieval abstraction that is ready for stronger semantic search later
 - a context builder that assembles grounded memory before response generation
 - a mock LLM provider for local demos and an optional OpenAI-backed provider
 
 ## Architecture Overview
 
-`POST /chat` validates input, loads the session, builds a context pack from Redis and PostgreSQL, generates a grounded response, persists both messages, updates Redis memory, refreshes the summary, and stores extracted facts.
+`POST /chat` validates the request, loads or creates the session, builds a context pack from Redis and PostgreSQL, generates a grounded response, persists both messages, refreshes short-term memory, updates the summary, and stores newly extracted facts.
 
 More detail:
 
@@ -127,7 +131,18 @@ See [`docs/roadmap.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/r
 
 ## Positioning
 
-ContextWeave is not a generic AI framework. It is a pragmatic, testable, engineering-first reference implementation for context memory.
+ContextWeave is a pragmatic reference implementation for AI context memory.
+
+It is built to show how to combine working memory, persistent facts, retrieval, and context packing in a way that is easy to understand, test, and evolve.
+
+It is not a generic AI orchestration framework or a full agent platform.
+
+Its main differentiators are:
+
+- simple architecture
+- local-first developer experience
+- explicit testing strategy
+- clear evolution path from MVP to enterprise
 
 See [`docs/positioning.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/positioning.md).
 

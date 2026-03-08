@@ -1,5 +1,7 @@
 # Evolution
 
+This evolution path keeps the current MVP intentionally simple while making the long-term direction explicit.
+
 ## Stage 1: Simple Synchronous MVP
 
 The current MVP keeps everything inside a single FastAPI application. This makes the request flow easy to trace, easy to test, and easy to run locally. Redis and PostgreSQL are external, but orchestration remains synchronous inside one process.
@@ -26,5 +28,4 @@ An enterprise evolution can decompose the MVP into dedicated services:
 - ingestion pipeline
 - analytics and audit service
 
-Kafka becomes appropriate at this stage as the event backbone for ingestion events, memory updates, evaluation streams, and audit trails. It is intentionally excluded from the MVP because it would add operational weight before the design needs it.
-
+Kafka becomes appropriate at this stage as the event backbone for ingestion events, memory updates, evaluation streams, and audit trails. It is intentionally excluded from the MVP because it would add operational weight before the architecture needs it.

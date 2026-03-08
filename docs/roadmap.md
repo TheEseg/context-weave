@@ -1,5 +1,7 @@
 # Roadmap
 
+ContextWeave is intentionally scoped as a pragmatic reference implementation first, then evolved toward more production-oriented architectures in later phases.
+
 ## Phase 1 — MVP
 
 - FastAPI API surface
@@ -32,4 +34,3 @@
 - Kafka as event backbone
 - multi-tenant support
 - observability
-

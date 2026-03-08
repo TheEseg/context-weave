@@ -1,6 +1,6 @@
 # Architecture
 
-ContextWeave uses a layered memory design so the application can preserve continuity without relying on the prompt alone.
+ContextWeave is a pragmatic layered memory architecture for AI applications. The MVP uses explicit working memory, durable storage, retrieval, and context packing to preserve context continuity beyond the prompt.
 
 ## Request Flow
 
@@ -29,4 +29,4 @@ ContextWeave uses a layered memory design so the application can preserve contin
 - Keep retrieval pluggable so semantic search can improve later.
 - Prefer deterministic behavior for local demos and tests.
 - Preserve clean seams for future async and service-level evolution.
-
+- Optimize for clarity, testability, and a credible upgrade path.

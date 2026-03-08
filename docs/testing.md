@@ -1,6 +1,6 @@
 # Testing
 
-ContextWeave uses three complementary test layers.
+ContextWeave uses three complementary test layers so context continuity behavior stays easy to verify as the project evolves.
 
 ## Unit Tests
 
@@ -34,4 +34,4 @@ Scenario tests exercise context continuity over multiple turns. The main scenari
 - working memory is updated after each turn
 - the chat endpoint returns grounded responses without external model access
 - continuity scenarios keep passing as the architecture evolves
-
+- the repository remains easy to inspect and safe to extend
