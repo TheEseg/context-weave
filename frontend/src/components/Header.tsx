@@ -6,9 +6,13 @@ type HeaderProps = {
 export function Header({ healthStatus, apiBaseUrl }: HeaderProps) {
   return (
     <header className="app-header">
-      <div>
-        <p className="eyebrow">Layered memory demo</p>
-        <h1>ContextWeave</h1>
+      <div className="brand-block">
+        <div className="brand-lockup">
+          <div className="brand-copy">
+            <p className="eyebrow">Layered memory demo</p>
+            <h1>ContextWeave</h1>
+          </div>
+        </div>
         <p className="tagline">Context continuity beyond the prompt.</p>
       </div>
 
@@ -24,4 +28,3 @@ export function Header({ healthStatus, apiBaseUrl }: HeaderProps) {
     </header>
   );
 }
-

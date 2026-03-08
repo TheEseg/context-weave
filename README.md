@@ -1,6 +1,10 @@
 # ContextWeave
 
-Context continuity beyond the prompt.
+<p align="center">
+  <img src="assets/contextweave-logo-horizontal.png" alt="ContextWeave logo" width="520" />
+</p>
+
+<p align="center"><strong>Context continuity beyond the prompt.</strong></p>
 
 ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the prompt window.
 
