@@ -1,4 +1,27 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contextweave-app
+    environment:
+      APP_ENV: development
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      DATABASE_URL: postgresql+psycopg://contextweave:contextweave@postgres:5432/contextweave
+      REDIS_URL: redis://redis:6379/0
+      LLM_PROVIDER: mock
+      DEBUG_CONTEXT: "false"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: contextweave-postgres
@@ -32,4 +55,3 @@ services:
 volumes:
   postgres_data:
   redis_data:
-

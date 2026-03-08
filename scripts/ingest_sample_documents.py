@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.db.session import SessionLocal, init_db
 from app.services.ingestion_service import IngestionService
@@ -20,4 +23,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
