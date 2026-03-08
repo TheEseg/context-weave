@@ -1,3 +1,5 @@
+import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,10 +12,20 @@ from app.core.config import get_cors_origins, get_settings
 from app.core.logging import configure_logging
 from app.db.session import init_db
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     configure_logging()
+    settings = get_settings()
+    raw_database_url = os.getenv("DATABASE_URL")
+    logger.info(
+        "Railway config diagnostics: env DATABASE_URL present=%s env_has_localhost=%s settings_has_localhost=%s",
+        raw_database_url is not None,
+        "localhost" in raw_database_url if raw_database_url else False,
+        "localhost" in settings.database_url,
+    )
     init_db()
     yield
 
