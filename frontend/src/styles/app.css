@@ -126,6 +126,15 @@ pre {
   text-decoration: none;
 }
 
+.mode-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(77, 183, 255, 0.12);
+  color: var(--accent-soft);
+  border: 1px solid rgba(127, 223, 255, 0.2);
+  font-size: 0.85rem;
+}
+
 .status-pill {
   padding: 6px 10px;
   border-radius: 999px;

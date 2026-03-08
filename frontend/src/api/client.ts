@@ -1,6 +1,8 @@
 import type { ChatResponse, HealthResponse, SessionContext } from "../types";
+import { mockGetSessionContext, mockHealth, mockSendChatMessage } from "../demo/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const DEMO_MODE = String(import.meta.env.VITE_DEMO_MODE || "false").toLowerCase() === "true";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -28,6 +30,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export function getHealth(): Promise<HealthResponse> {
+  if (DEMO_MODE) {
+    return mockHealth();
+  }
   return request<HealthResponse>("/health");
 }
 
@@ -36,6 +41,9 @@ export function sendChatMessage(payload: {
   user_id: string;
   message: string;
 }): Promise<ChatResponse> {
+  if (DEMO_MODE) {
+    return mockSendChatMessage(payload);
+  }
   return request<ChatResponse>("/chat", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -43,8 +51,10 @@ export function sendChatMessage(payload: {
 }
 
 export function getSessionContext(sessionId: string): Promise<SessionContext> {
+  if (DEMO_MODE) {
+    return mockGetSessionContext(sessionId);
+  }
   return request<SessionContext>(`/sessions/${encodeURIComponent(sessionId)}/context`);
 }
 
-export { API_BASE_URL };
-
+export { API_BASE_URL, DEMO_MODE };

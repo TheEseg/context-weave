@@ -26,3 +26,5 @@ The frontend uses only three backend endpoints:
 - `GET /sessions/{session_id}/context`
 
 This keeps the demo layer simple while still making ContextWeave's core value easy to understand.
+
+For public sharing, the same frontend can be deployed to GitHub Pages while pointing at a live backend through `VITE_API_BASE_URL`, or it can run in browser-only fallback mode with `VITE_DEMO_MODE=true`.

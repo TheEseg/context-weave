@@ -8,6 +8,16 @@
 
 ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the prompt window.
 
+## Live Demo
+
+The frontend demo can be published to GitHub Pages at:
+
+- `https://<github-username>.github.io/context-weave/`
+
+GitHub Pages hosts only the static frontend. The backend remains separate and is configured through `VITE_API_BASE_URL`.
+
+If no public backend is available, the Pages build can run with `VITE_DEMO_MODE=true`, which enables a browser-only fallback flow that still demonstrates conversation continuity, summary updates, extracted facts, and retrieved chunks.
+
 ## Why This Project Exists
 
 Many AI applications still treat context as whatever fits inside the current prompt. That works for short demos, but it breaks down when conversations span multiple topics, sessions, or time horizons. ContextWeave exists to show a practical alternative: keep working memory explicit, make durable memory inspectable, and build each response from a grounded context pack.
@@ -43,6 +53,7 @@ More detail:
 - [`docs/data-model.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/data-model.md)
 - [`docs/evolution.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/evolution.md)
 - [`docs/frontend.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/frontend.md)
+- [`docs/frontend-demo.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/frontend-demo.md)
 
 ## MVP Scope
 
@@ -106,7 +117,9 @@ make frontend-install
 make frontend-dev
 ```
 
-The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, and debug metadata behind the conversation.
+The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. Set `VITE_DEMO_MODE=true` to force browser-only fallback mode. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, and debug metadata behind the conversation.
+
+For GitHub Pages, the frontend is built with the `/context-weave/` base path and deployed independently from the backend.
 
 ## Main Endpoints
 
@@ -145,6 +158,12 @@ Frontend build check:
 ```bash
 make frontend-build
 ```
+
+GitHub Pages deploy:
+
+- push to `main`
+- the workflow in [`.github/workflows/deploy-pages.yml`](/Users/ivanesegovic/Documents/Codex/context-weave/.github/workflows/deploy-pages.yml) builds `frontend/` and publishes `frontend/dist`
+- configure repository variables `VITE_API_BASE_URL` and `VITE_DEMO_MODE` if you want to point the public demo at a live backend or force mock mode
 
 ## Roadmap
 

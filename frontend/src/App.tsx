@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { API_BASE_URL, getHealth, getSessionContext, sendChatMessage } from "./api/client";
+import { API_BASE_URL, DEMO_MODE, getHealth, getSessionContext, sendChatMessage } from "./api/client";
 import { ChatPanel } from "./components/ChatPanel";
 import { ContextInspector } from "./components/ContextInspector";
 import { Header } from "./components/Header";
@@ -83,7 +83,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Header healthStatus={healthStatus} apiBaseUrl={API_BASE_URL} />
+      <Header healthStatus={healthStatus} apiBaseUrl={API_BASE_URL} demoMode={DEMO_MODE} />
 
       <main className="main-layout">
         <ChatPanel
@@ -111,4 +111,3 @@ export default function App() {
     </div>
   );
 }
-
