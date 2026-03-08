@@ -12,6 +12,9 @@ DATABASE_URL = os.getenv(
     "postgresql+psycopg://contextweave:contextweave@localhost:5432/contextweave",
 )
 
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
 engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
