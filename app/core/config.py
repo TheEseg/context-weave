@@ -21,8 +21,6 @@ class Settings(BaseSettings):
     summary_char_limit: int = 400
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
         extra="ignore",
     )
 
