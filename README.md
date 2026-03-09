@@ -6,6 +6,12 @@
 
 <p align="center"><strong>Context continuity beyond the prompt.</strong></p>
 
+<p align="center">
+  <a href="https://github.com/theeseg/context-weave/actions/workflows/ci.yml">
+    <img src="https://github.com/theeseg/context-weave/actions/workflows/ci.yml/badge.svg" alt="CI status" />
+  </a>
+</p>
+
 ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the prompt window.
 
 ## Live Demo
@@ -142,6 +148,8 @@ curl -X POST http://localhost:8000/chat \
 ```
 
 ## Testing
+
+ContextWeave is validated through backend tests, Playwright end-to-end tests for the demo UI, and GitHub Actions CI on pushes to `main` and on pull requests.
 
 Local Python 3.12:
 
