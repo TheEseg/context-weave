@@ -24,6 +24,7 @@ export function DebugCard({
       subtitle="Inspector"
       meta={<span className="card-tag">{recentMessages.length} recent</span>}
       defaultOpen={false}
+      testId="debug-section"
     >
       <dl className="metadata-grid">
         <div>

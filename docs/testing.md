@@ -27,6 +27,33 @@ The test suite uses SQLite and `fakeredis` to keep local feedback fast while pre
 
 Scenario tests exercise context continuity over multiple turns. The main scenario proves that a user can define the architecture stack, move to another topic, and later ask for the chosen stack while still getting a grounded answer.
 
+## End-To-End Tests
+
+Playwright covers the demo UI itself:
+
+- desktop app load and control visibility
+- demo session loading with a populated context inspector
+- chat interaction and continuity updates
+- mobile layout, scrolling, and inspector accessibility
+
+These tests run the frontend in `VITE_DEMO_MODE=true` so the suite stays deterministic and does not depend on the live backend.
+
+### Running Playwright
+
+```bash
+cd frontend
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+Optional modes:
+
+```bash
+npm run test:e2e:headed
+npm run test:e2e:ui
+```
+
 ## What Success Looks Like
 
 - deterministic unit results

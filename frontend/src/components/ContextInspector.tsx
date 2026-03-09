@@ -14,7 +14,7 @@ export function ContextInspector({ context, loading, error }: ContextInspectorPr
   const hasContext = Boolean(context);
 
   return (
-    <aside className="panel inspector-panel">
+    <aside className="panel inspector-panel" data-testid="context-inspector">
       <div className="panel-heading">
         <div>
           <p className="section-kicker">Context continuity</p>

@@ -18,7 +18,11 @@ export function MessageList({ messages, loading }: MessageListProps) {
   return (
     <div className="message-list">
       {messages.map((message, index) => (
-        <article key={`${message.role}-${message.created_at ?? index}`} className={`message message-${message.role}`}>
+        <article
+          key={`${message.role}-${message.created_at ?? index}`}
+          className={`message message-${message.role}`}
+          data-testid={`message-${message.role}`}
+        >
           <div className="message-meta">
             <span>{message.role === "user" ? "User" : "Assistant"}</span>
           </div>
@@ -29,4 +33,3 @@ export function MessageList({ messages, loading }: MessageListProps) {
     </div>
   );
 }
-

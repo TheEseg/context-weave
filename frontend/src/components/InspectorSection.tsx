@@ -6,6 +6,7 @@ type InspectorSectionProps = PropsWithChildren<{
   defaultOpen?: boolean;
   mobileOnlyCollapse?: boolean;
   meta?: ReactNode;
+  testId?: string;
 }>;
 
 export function InspectorSection({
@@ -14,10 +15,12 @@ export function InspectorSection({
   defaultOpen = true,
   mobileOnlyCollapse = true,
   meta,
+  testId,
   children,
 }: InspectorSectionProps) {
   return (
     <details
+      data-testid={testId}
       className={`inspector-section${mobileOnlyCollapse ? " inspector-section-mobile" : ""}`}
       open={defaultOpen}
     >
@@ -37,4 +40,3 @@ export function InspectorSection({
     </details>
   );
 }
-

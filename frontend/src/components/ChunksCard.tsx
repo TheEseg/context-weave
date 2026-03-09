@@ -11,6 +11,7 @@ export function ChunksCard({ chunks }: ChunksCardProps) {
       title="Relevant chunks"
       subtitle="Retrieval"
       meta={<span className="card-tag">{chunks.length} matched</span>}
+      testId="chunks-section"
     >
       {chunks.length === 0 ? (
         <p className="card-body">No supporting document chunks were retrieved for the current session context.</p>

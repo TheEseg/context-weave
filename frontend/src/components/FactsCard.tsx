@@ -11,6 +11,7 @@ export function FactsCard({ facts }: FactsCardProps) {
       title="Retrieved facts"
       subtitle="Persistent memory"
       meta={<span className="card-tag">{facts.length} stored</span>}
+      testId="facts-section"
     >
       {facts.length === 0 ? (
         <p className="card-body">No durable facts extracted yet for this session.</p>

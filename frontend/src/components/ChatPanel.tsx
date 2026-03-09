@@ -47,7 +47,7 @@ export function ChatPanel({
   }
 
   return (
-    <section className="panel chat-panel">
+    <section className="panel chat-panel" data-testid="chat-panel">
       <div className="panel-heading">
         <div>
           <p className="section-kicker">Conversation</p>
@@ -56,7 +56,7 @@ export function ChatPanel({
             Use the demo session to show how earlier architecture decisions stay available in later turns.
           </p>
         </div>
-        <button className="secondary-button" onClick={onLoadDemo} type="button">
+        <button className="secondary-button" data-testid="load-demo-session" onClick={onLoadDemo} type="button">
           Load demo session
         </button>
       </div>
@@ -64,19 +64,19 @@ export function ChatPanel({
       <div className="session-controls">
         <label>
           <span>Session ID</span>
-          <input value={draftSessionId} onChange={(event) => onSessionIdChange(event.target.value)} />
+          <input data-testid="session-id-input" value={draftSessionId} onChange={(event) => onSessionIdChange(event.target.value)} />
         </label>
         <label>
           <span>User ID</span>
-          <input value={draftUserId} onChange={(event) => onUserIdChange(event.target.value)} />
+          <input data-testid="user-id-input" value={draftUserId} onChange={(event) => onUserIdChange(event.target.value)} />
         </label>
       </div>
 
       <div className="action-row">
-        <button className="secondary-button" onClick={onApplySession} type="button">
+        <button className="secondary-button" data-testid="open-session" onClick={onApplySession} type="button">
           Open session
         </button>
-        <button className="ghost-button" onClick={onResetSession} type="button">
+        <button className="ghost-button" data-testid="reset-session" onClick={onResetSession} type="button">
           Reset session view
         </button>
         <div className="session-badge">
@@ -94,13 +94,14 @@ export function ChatPanel({
         <label>
           <span>Message</span>
           <textarea
+            data-testid="message-input"
             placeholder="Ask something that should still be recallable later, even after topic changes."
             rows={5}
             value={message}
             onChange={(event) => setMessage(event.target.value)}
           />
         </label>
-        <button className="primary-button" disabled={loading || !message.trim()} type="submit">
+        <button className="primary-button" data-testid="send-message" disabled={loading || !message.trim()} type="submit">
           {loading ? "Sending..." : "Send message"}
         </button>
       </form>
