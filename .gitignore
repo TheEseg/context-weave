@@ -184,3 +184,4 @@ frontend/dist/
 frontend/*.tsbuildinfo
 frontend/playwright-report/
 frontend/test-results/
+scripts/create_v02_issues.sh
