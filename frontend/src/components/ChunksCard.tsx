@@ -1,4 +1,5 @@
 import type { SessionChunk } from "../types";
+import { InspectorSection } from "./InspectorSection";
 
 type ChunksCardProps = {
   chunks: SessionChunk[];
@@ -6,14 +7,11 @@ type ChunksCardProps = {
 
 export function ChunksCard({ chunks }: ChunksCardProps) {
   return (
-    <section className="inspector-card">
-      <div className="card-header">
-        <div>
-          <p className="section-kicker">Retrieval</p>
-          <h3>Relevant chunks</h3>
-        </div>
-        <span className="card-tag">{chunks.length} matched</span>
-      </div>
+    <InspectorSection
+      title="Relevant chunks"
+      subtitle="Retrieval"
+      meta={<span className="card-tag">{chunks.length} matched</span>}
+    >
       {chunks.length === 0 ? (
         <p className="card-body">No supporting document chunks were retrieved for the current session context.</p>
       ) : (
@@ -29,6 +27,6 @@ export function ChunksCard({ chunks }: ChunksCardProps) {
           ))}
         </div>
       )}
-    </section>
+    </InspectorSection>
   );
 }

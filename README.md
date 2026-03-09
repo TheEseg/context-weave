@@ -121,6 +121,7 @@ make frontend-dev
 The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. Set `VITE_DEMO_MODE=true` to force browser-only fallback mode. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, and debug metadata behind the conversation.
 
 For GitHub Pages, the frontend is built with the `/context-weave/` base path and deployed independently from the backend.
+The demo is optimized for both desktop and mobile viewing, with the chat flow prioritized on smaller screens.
 
 ## Main Endpoints
 

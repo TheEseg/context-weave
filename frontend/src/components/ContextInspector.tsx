@@ -26,6 +26,7 @@ export function ContextInspector({ context, loading, error }: ContextInspectorPr
       <p className="inspector-intro">
         This panel shows what ContextWeave can remember, retrieve, and pack around the active session.
       </p>
+      <div className="mobile-divider">Context inspector</div>
 
       {loading ? <div className="loading-card">Refreshing context pack…</div> : null}
       {error ? (

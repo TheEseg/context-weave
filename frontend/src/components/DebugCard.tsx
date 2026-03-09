@@ -1,4 +1,5 @@
 import type { ChatMessage } from "../types";
+import { InspectorSection } from "./InspectorSection";
 
 type DebugCardProps = {
   sessionId: string;
@@ -18,15 +19,12 @@ export function DebugCard({
   const taskStateKeys = Object.keys(taskState);
 
   return (
-    <section className="inspector-card">
-      <div className="card-header">
-        <div>
-          <p className="section-kicker">Inspector</p>
-          <h3>Debug metadata</h3>
-        </div>
-        <span className="card-tag">{recentMessages.length} recent</span>
-      </div>
-
+    <InspectorSection
+      title="Debug metadata"
+      subtitle="Inspector"
+      meta={<span className="card-tag">{recentMessages.length} recent</span>}
+      defaultOpen={false}
+    >
       <dl className="metadata-grid">
         <div>
           <dt>Session</dt>
@@ -70,6 +68,6 @@ export function DebugCard({
           </ul>
         )}
       </div>
-    </section>
+    </InspectorSection>
   );
 }

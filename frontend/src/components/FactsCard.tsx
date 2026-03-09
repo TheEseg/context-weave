@@ -1,4 +1,5 @@
 import type { SessionFact } from "../types";
+import { InspectorSection } from "./InspectorSection";
 
 type FactsCardProps = {
   facts: SessionFact[];
@@ -6,14 +7,11 @@ type FactsCardProps = {
 
 export function FactsCard({ facts }: FactsCardProps) {
   return (
-    <section className="inspector-card">
-      <div className="card-header">
-        <div>
-          <p className="section-kicker">Persistent memory</p>
-          <h3>Retrieved facts</h3>
-        </div>
-        <span className="card-tag">{facts.length} stored</span>
-      </div>
+    <InspectorSection
+      title="Retrieved facts"
+      subtitle="Persistent memory"
+      meta={<span className="card-tag">{facts.length} stored</span>}
+    >
       {facts.length === 0 ? (
         <p className="card-body">No durable facts extracted yet for this session.</p>
       ) : (
@@ -26,6 +24,6 @@ export function FactsCard({ facts }: FactsCardProps) {
           ))}
         </ul>
       )}
-    </section>
+    </InspectorSection>
   );
 }
