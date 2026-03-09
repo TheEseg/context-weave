@@ -7,6 +7,7 @@ type DebugCardProps = {
   totalMessages: number;
   recentMessages: ChatMessage[];
   taskState: Record<string, string>;
+  memoryEnabled: boolean;
 };
 
 export function DebugCard({
@@ -15,6 +16,7 @@ export function DebugCard({
   totalMessages,
   recentMessages,
   taskState,
+  memoryEnabled,
 }: DebugCardProps) {
   const taskStateKeys = Object.keys(taskState);
 
@@ -22,7 +24,7 @@ export function DebugCard({
     <InspectorSection
       title="Debug metadata"
       subtitle="Inspector"
-      meta={<span className="card-tag">{recentMessages.length} recent</span>}
+      meta={<span className="card-tag">{memoryEnabled ? `${recentMessages.length} recent` : "Memory bypassed"}</span>}
       defaultOpen={false}
       testId="debug-section"
     >
@@ -40,6 +42,10 @@ export function DebugCard({
           <dd>{totalMessages}</dd>
         </div>
         <div>
+          <dt>Memory mode</dt>
+          <dd>{memoryEnabled ? "ON" : "OFF"}</dd>
+        </div>
+        <div>
           <dt>Recent memory entries</dt>
           <dd>{recentMessages.length}</dd>
         </div>
@@ -47,7 +53,9 @@ export function DebugCard({
 
       <div className="subsection">
         <h4>Task state</h4>
-        {taskStateKeys.length === 0 ? (
+        {!memoryEnabled ? (
+          <p className="card-body muted">Task state was bypassed for this turn.</p>
+        ) : taskStateKeys.length === 0 ? (
           <p className="card-body muted">No task-state values stored yet.</p>
         ) : (
           <pre>{JSON.stringify(taskState, null, 2)}</pre>
@@ -56,7 +64,9 @@ export function DebugCard({
 
       <div className="subsection">
         <h4>Recent working memory</h4>
-        {recentMessages.length === 0 ? (
+        {!memoryEnabled ? (
+          <p className="card-body muted">Working memory was bypassed for this turn.</p>
+        ) : recentMessages.length === 0 ? (
           <p className="card-body muted">No recent messages in Redis working memory yet.</p>
         ) : (
           <ul className="recent-list">

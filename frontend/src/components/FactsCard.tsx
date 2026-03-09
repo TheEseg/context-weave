@@ -3,17 +3,20 @@ import { InspectorSection } from "./InspectorSection";
 
 type FactsCardProps = {
   facts: SessionFact[];
+  memoryEnabled: boolean;
 };
 
-export function FactsCard({ facts }: FactsCardProps) {
+export function FactsCard({ facts, memoryEnabled }: FactsCardProps) {
   return (
     <InspectorSection
       title="Retrieved facts"
       subtitle="Persistent memory"
-      meta={<span className="card-tag">{facts.length} stored</span>}
+      meta={<span className="card-tag">{memoryEnabled ? `${facts.length} stored` : "Disabled"}</span>}
       testId="facts-section"
     >
-      {facts.length === 0 ? (
+      {!memoryEnabled ? (
+        <p className="card-body">Disabled for this turn. Persistent facts were not pulled into the model context.</p>
+      ) : facts.length === 0 ? (
         <p className="card-body">No durable facts extracted yet for this session.</p>
       ) : (
         <ul className="fact-list">

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.db.models import Fact, Message, Session as ChatSession
-from app.memory.context_builder import ContextBuilder
+from app.memory.context_builder import ContextBuilder, ContextPack
 from app.memory.fact_extractor import FactExtractor
 from app.memory.redis_store import RedisMemoryStore
 from app.memory.summarizer import SessionSummarizer
@@ -39,39 +39,48 @@ class ChatService:
 
     def handle_chat(self, payload: ChatRequest) -> ChatResponse:
         session = self._get_or_create_session(payload.session_id, payload.user_id)
-        context = self.context_builder.build(self.db, session.id, payload.message)
-        assistant_response = self.llm_provider.generate(payload.message, context)
+        if payload.memory_enabled:
+            context = self.context_builder.build(self.db, session.id, payload.message)
+        else:
+            context = ContextPack.direct_message_only()
+
+        assistant_response = self.llm_provider.generate(
+            payload.message,
+            context,
+            memory_enabled=payload.memory_enabled,
+        )
 
         user_message = Message(session_id=session.id, role="user", content=payload.message)
         assistant_message = Message(session_id=session.id, role="assistant", content=assistant_response)
         self.db.add_all([user_message, assistant_message])
         self.db.commit()
 
-        self.memory_store.append_recent_message(
-            session.id,
-            {"role": "user", "content": payload.message},
-            limit=self.settings.recent_message_limit,
-        )
-        self.memory_store.append_recent_message(
-            session.id,
-            {"role": "assistant", "content": assistant_response},
-            limit=self.settings.recent_message_limit,
-        )
-        updated_recent = self.memory_store.get_recent_messages(session.id)
-        summary = self.summarizer.summarize(self.memory_store.get_summary(session.id), updated_recent)
-        self.memory_store.set_summary(session.id, summary)
-        self.memory_store.set_task_state(session.id, {"last_user_message": payload.message})
-
-        self._store_facts(payload.session_id, payload.user_id, payload.message)
-
-        debug = None
-        if self.settings.debug_context:
-            debug = ContextDebug(
-                recent_messages=context.recent_messages,
-                summary=context.summary,
-                facts=context.facts,
-                chunks=context.chunks,
+        if payload.memory_enabled:
+            self.memory_store.append_recent_message(
+                session.id,
+                {"role": "user", "content": payload.message},
+                limit=self.settings.recent_message_limit,
             )
+            self.memory_store.append_recent_message(
+                session.id,
+                {"role": "assistant", "content": assistant_response},
+                limit=self.settings.recent_message_limit,
+            )
+            updated_recent = self.memory_store.get_recent_messages(session.id)
+            summary = self.summarizer.summarize(self.memory_store.get_summary(session.id), updated_recent)
+            self.memory_store.set_summary(session.id, summary)
+            self.memory_store.set_task_state(session.id, {"last_user_message": payload.message})
+            self._store_facts(payload.session_id, payload.user_id, payload.message)
+
+        debug = ContextDebug(
+            memory_enabled=payload.memory_enabled,
+            recent_messages=context.recent_messages,
+            session_summary=context.summary,
+            retrieved_facts=context.facts,
+            retrieved_chunks=context.chunks,
+            final_packed_context=context.pack_for_model(payload.message),
+            context_length_chars=context.context_length_chars(payload.message),
+        )
 
         return ChatResponse(
             session_id=payload.session_id,
@@ -109,4 +118,3 @@ class ChatService:
         except IntegrityError:
             logger.info("Duplicate facts skipped for session %s", session_id)
             self.db.rollback()
-

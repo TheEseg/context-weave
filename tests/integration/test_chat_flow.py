@@ -20,11 +20,35 @@ def test_chat_endpoint_persists_and_returns_grounded_response(client, db_session
             "session_id": "chat-flow",
             "user_id": "demo-user",
             "message": "What stack should I remember?",
+            "memory_enabled": True,
         },
     )
 
     assert response.status_code == 200
     body = response.json()
     assert body["session_id"] == "chat-flow"
-    assert "response" in body
+    assert "FastAPI" in body["response"]
+    assert body["debug"]["memory_enabled"] is True
+    assert "Current user message:" in body["debug"]["final_packed_context"]
+    assert body["debug"]["context_length_chars"] > 0
 
+
+def test_chat_endpoint_can_bypass_memory_layers(client, db_session) -> None:
+    response = client.post(
+        "/chat",
+        json={
+            "session_id": "memory-off",
+            "user_id": "demo-user",
+            "message": "What architecture did we decide?",
+            "memory_enabled": False,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert "Memory is off" in body["response"]
+    assert body["debug"]["memory_enabled"] is False
+    assert body["debug"]["session_summary"] == "disabled"
+    assert body["debug"]["retrieved_facts"] == []
+    assert body["debug"]["retrieved_chunks"] == []
+    assert body["debug"]["final_packed_context"] == "Current user message:\nWhat architecture did we decide?"

@@ -47,14 +47,14 @@ def memory_store() -> RedisMemoryStore:
 @pytest.fixture()
 def test_settings() -> Settings:
     return Settings(
-        APP_ENV="test",
-        APP_HOST="127.0.0.1",
-        APP_PORT=8000,
-        DATABASE_URL="sqlite://",
-        REDIS_URL="redis://unused",
-        LLM_PROVIDER="mock",
-        DEBUG_CONTEXT=True,
-        CORS_ORIGINS="http://localhost:5173",
+        app_env="test",
+        app_host="127.0.0.1",
+        app_port=8000,
+        database_url="sqlite://",
+        redis_url="redis://unused",
+        llm_provider="mock",
+        debug_context=True,
+        cors_origins="http://localhost:5173",
     )
 
 

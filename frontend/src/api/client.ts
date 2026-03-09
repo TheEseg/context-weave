@@ -40,6 +40,7 @@ export function sendChatMessage(payload: {
   session_id: string;
   user_id: string;
   message: string;
+  memory_enabled: boolean;
 }): Promise<ChatResponse> {
   if (DEMO_MODE) {
     return mockSendChatMessage(payload);

@@ -21,10 +21,13 @@ export type SessionChunk = {
 };
 
 export type ContextDebug = {
-  recent_messages: Array<{ role: string; content: string }>;
-  summary: string;
-  facts: SessionFact[];
-  chunks: SessionChunk[];
+  memory_enabled: boolean;
+  recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
+  session_summary: string;
+  retrieved_facts: SessionFact[];
+  retrieved_chunks: SessionChunk[];
+  final_packed_context: string;
+  context_length_chars: number;
 };
 
 export type ChatResponse = {
@@ -44,4 +47,3 @@ export type SessionContext = {
   chunks: SessionChunk[];
   task_state: Record<string, string>;
 };
-

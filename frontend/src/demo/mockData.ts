@@ -4,6 +4,7 @@ type SendChatPayload = {
   session_id: string;
   user_id: string;
   message: string;
+  memory_enabled: boolean;
 };
 
 const sessions = new Map<string, SessionContext>();
@@ -13,6 +14,14 @@ function createSeededSession(): SessionContext {
     session_id: "demo-session",
     user_id: "demo-user",
     messages: [
+      {
+        role: "user",
+        content: "The API layer uses FastAPI.",
+      },
+      {
+        role: "assistant",
+        content: "Captured FastAPI as the API layer for ContextWeave.",
+      },
       {
         role: "user",
         content: "The project uses Redis and PostgreSQL for memory and persistence.",
@@ -44,6 +53,14 @@ function createSeededSession(): SessionContext {
     recent_messages: [
       {
         role: "user",
+        content: "The API layer uses FastAPI.",
+      },
+      {
+        role: "assistant",
+        content: "Captured FastAPI as the API layer for ContextWeave.",
+      },
+      {
+        role: "user",
         content: "The project uses Redis and PostgreSQL for memory and persistence.",
       },
       {
@@ -71,8 +88,9 @@ function createSeededSession(): SessionContext {
       },
     ],
     summary:
-      "Session summary: Redis and PostgreSQL were selected for memory and persistence. The frontend is deployed on GitHub Pages, and the backend runs on Railway.",
+      "Session summary: FastAPI is the API layer. Redis and PostgreSQL were selected for memory and persistence. The frontend is deployed on GitHub Pages, and the backend runs on Railway.",
     facts: [
+      { fact_key: "technology", fact_value: "FastAPI" },
       { fact_key: "technology", fact_value: "Redis" },
       { fact_key: "technology", fact_value: "PostgreSQL" },
       { fact_key: "frontend_hosting", fact_value: "GitHub Pages" },
@@ -90,6 +108,12 @@ function createSeededSession(): SessionContext {
         chunk_index: 0,
         content:
           "ContextWeave separates working memory from durable memory so the system can rebuild context after long gaps.",
+      },
+      {
+        document_title: "API Layer",
+        chunk_index: 0,
+        content:
+          "FastAPI exposes the chat and health endpoints while the context builder assembles summary, facts, retrieval results, and recent messages.",
       },
       {
         document_title: "Storage Stack",
@@ -162,13 +186,20 @@ function extractFacts(message: string): SessionContext["facts"] {
   return facts;
 }
 
-function buildAssistantResponse(session: SessionContext, message: string): string {
+function buildAssistantResponse(session: SessionContext, message: string, memoryEnabled: boolean): string {
   const lower = message.toLowerCase();
   const technologies = session.facts
     .filter((fact) => fact.fact_key === "technology")
     .map((fact) => fact.fact_value);
   const frontendHosting = session.facts.find((fact) => fact.fact_key === "frontend_hosting")?.fact_value;
   const backendHosting = session.facts.find((fact) => fact.fact_key === "backend_hosting")?.fact_value;
+
+  if (!memoryEnabled) {
+    if (lower.includes("stack") || lower.includes("architecture")) {
+      return "Memory is off, so this reply uses only the current message and cannot recover earlier architecture decisions.";
+    }
+    return "Memory is off for this turn, so the response is limited to your latest message without stored summary, facts, or retrieval support.";
+  }
 
   if (
     lower.includes("which stack") ||
@@ -178,13 +209,14 @@ function buildAssistantResponse(session: SessionContext, message: string): strin
     lower.includes("architecture did we decide")
   ) {
     if (technologies.length > 0 || frontendHosting || backendHosting) {
-      const stackPart =
-        technologies.length > 0 ? `Redis and PostgreSQL are the remembered storage components.` : "";
+      const stackPart = technologies.length > 0 ? `${technologies.join(", ")} are the remembered architecture components.` : "";
       const hostingPart =
         frontendHosting || backendHosting
           ? ` The demo delivery split is ${frontendHosting ?? "the frontend"} for the frontend and ${backendHosting ?? "the backend"} for the backend.`
           : "";
-      return `${stackPart}${hostingPart}`.trim();
+      const chunkSupport =
+        session.chunks.length > 0 ? ` Retrieved context also points to: ${session.chunks[0].content}` : "";
+      return `${stackPart}${hostingPart}${chunkSupport}`.trim();
     }
   }
 
@@ -192,10 +224,40 @@ function buildAssistantResponse(session: SessionContext, message: string): strin
     return `Grounded mock response from remembered context: ${session.facts
       .slice(0, 4)
       .map((fact) => `${fact.fact_key}=${fact.fact_value}`)
-      .join("; ")}.`;
+      .join("; ")}. Session summary: ${session.summary.slice(0, 160)}.`;
   }
 
   return "Mock response: this public demo is running without a live backend, but the layered memory flow is still visible.";
+}
+
+function buildPackedContext(session: SessionContext, message: string, memoryEnabled: boolean): string {
+  if (!memoryEnabled) {
+    return `Current user message:\n${message}`;
+  }
+
+  const parts: string[] = [];
+  if (session.summary) {
+    parts.push(`Session summary:\n${session.summary}`);
+  }
+  if (session.facts.length > 0) {
+    parts.push(
+      `Retrieved facts:\n${session.facts.map((fact) => `- ${fact.fact_key}: ${fact.fact_value}`).join("\n")}`,
+    );
+  }
+  if (session.chunks.length > 0) {
+    parts.push(
+      `Retrieved chunks:\n${session.chunks
+        .map((chunk) => `[${chunk.document_title}#${chunk.chunk_index}] ${chunk.content}`)
+        .join("\n\n")}`,
+    );
+  }
+  if (session.recent_messages.length > 0) {
+    parts.push(
+      `Recent messages:\n${session.recent_messages.map((item) => `- ${item.role}: ${item.content}`).join("\n")}`,
+    );
+  }
+  parts.push(`Current user message:\n${message}`);
+  return parts.join("\n\n");
 }
 
 export async function mockHealth(): Promise<HealthResponse> {
@@ -211,34 +273,39 @@ export async function mockSendChatMessage(payload: SendChatPayload): Promise<Cha
   const session = ensureSession(payload.session_id, payload.user_id);
   const userMessage = { role: "user" as const, content: payload.message };
 
-  const newFacts = extractFacts(payload.message);
-  for (const fact of newFacts) {
-    const exists = session.facts.some(
-      (candidate) => candidate.fact_key === fact.fact_key && candidate.fact_value === fact.fact_value,
-    );
-    if (!exists) {
-      session.facts.push(fact);
+  if (payload.memory_enabled) {
+    const newFacts = extractFacts(payload.message);
+    for (const fact of newFacts) {
+      const exists = session.facts.some(
+        (candidate) => candidate.fact_key === fact.fact_key && candidate.fact_value === fact.fact_value,
+      );
+      if (!exists) {
+        session.facts.push(fact);
+      }
+    }
+
+    if (session.chunks.length === 0) {
+      session.chunks = [
+        {
+          document_title: "Pages Demo",
+          chunk_index: 0,
+          content:
+            "GitHub Pages hosts only the frontend. Demo mode keeps the conversation, summary, facts, and chunks visible without requiring a live backend.",
+        },
+      ];
     }
   }
 
-  if (session.chunks.length === 0) {
-    session.chunks = [
-      {
-        document_title: "Pages Demo",
-        chunk_index: 0,
-        content:
-          "GitHub Pages hosts only the frontend. Demo mode keeps the conversation, summary, facts, and chunks visible without requiring a live backend.",
-      },
-    ];
-  }
-
-  const assistantContent = buildAssistantResponse(session, payload.message);
+  const packedContext = buildPackedContext(session, payload.message, payload.memory_enabled);
+  const assistantContent = buildAssistantResponse(session, payload.message, payload.memory_enabled);
   const assistantMessage = { role: "assistant" as const, content: assistantContent };
 
   session.messages.push(userMessage, assistantMessage);
-  session.recent_messages = session.messages.slice(-6);
-  session.summary = summarize(session.messages);
-  session.task_state = { last_user_message: payload.message };
+  if (payload.memory_enabled) {
+    session.recent_messages = session.messages.slice(-6);
+    session.summary = summarize(session.messages);
+    session.task_state = { last_user_message: payload.message };
+  }
   session.user_id = payload.user_id;
 
   sessions.set(session.session_id, session);
@@ -248,10 +315,13 @@ export async function mockSendChatMessage(payload: SendChatPayload): Promise<Cha
     user_id: session.user_id,
     response: assistantContent,
     debug: {
-      recent_messages: session.recent_messages.map(({ role, content }) => ({ role, content })),
-      summary: session.summary,
-      facts: session.facts,
-      chunks: session.chunks,
+      memory_enabled: payload.memory_enabled,
+      recent_messages: payload.memory_enabled ? session.recent_messages.map(({ role, content }) => ({ role, content })) : [],
+      session_summary: payload.memory_enabled ? session.summary : "disabled",
+      retrieved_facts: payload.memory_enabled ? session.facts : [],
+      retrieved_chunks: payload.memory_enabled ? session.chunks : [],
+      final_packed_context: packedContext,
+      context_length_chars: packedContext.length,
     },
   };
 }

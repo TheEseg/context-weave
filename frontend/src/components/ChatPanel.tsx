@@ -11,8 +11,10 @@ type ChatPanelProps = {
   messages: ChatMessage[];
   loading: boolean;
   error: string | null;
+  memoryEnabled: boolean;
   onSessionIdChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
+  onMemoryEnabledChange: (value: boolean) => void;
   onApplySession: () => void;
   onResetSession: () => void;
   onLoadDemo: () => void;
@@ -27,8 +29,10 @@ export function ChatPanel({
   messages,
   loading,
   error,
+  memoryEnabled,
   onSessionIdChange,
   onUserIdChange,
+  onMemoryEnabledChange,
   onApplySession,
   onResetSession,
   onLoadDemo,
@@ -72,6 +76,30 @@ export function ChatPanel({
         </label>
       </div>
 
+      <div className="memory-toggle-row">
+        <span className="memory-toggle-label">Memory</span>
+        <div className="memory-toggle" data-testid="memory-toggle" role="group" aria-label="Memory mode">
+          <button
+            className={memoryEnabled ? "toggle-button toggle-button-active" : "toggle-button"}
+            data-testid="memory-on"
+            type="button"
+            onClick={() => onMemoryEnabledChange(true)}
+            aria-pressed={memoryEnabled}
+          >
+            ON
+          </button>
+          <button
+            className={!memoryEnabled ? "toggle-button toggle-button-active" : "toggle-button"}
+            data-testid="memory-off"
+            type="button"
+            onClick={() => onMemoryEnabledChange(false)}
+            aria-pressed={!memoryEnabled}
+          >
+            OFF
+          </button>
+        </div>
+      </div>
+
       <div className="action-row">
         <button className="secondary-button" data-testid="open-session" onClick={onApplySession} type="button">
           Open session
@@ -83,6 +111,7 @@ export function ChatPanel({
           <span>Active</span>
           <code>{sessionId}</code>
           <small>{userId}</small>
+          <small>{memoryEnabled ? "Memory ON" : "Memory OFF"}</small>
         </div>
       </div>
 

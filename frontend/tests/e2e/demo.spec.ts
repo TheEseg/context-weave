@@ -12,6 +12,8 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("context-inspector")).toBeVisible();
     await expect(page.getByLabel("Session ID")).toBeVisible();
     await expect(page.getByLabel("User ID")).toBeVisible();
+    await expect(page.getByTestId("memory-toggle")).toBeVisible();
+    await expect(page.getByTestId("memory-on")).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("load-demo-session")).toBeVisible();
     await expect(page.getByTestId("open-session")).toBeVisible();
     await expect(page.getByTestId("reset-session")).toBeVisible();
@@ -21,7 +23,7 @@ test.describe("ContextWeave demo desktop", () => {
     await page.getByTestId("load-demo-session").click();
 
     await expect(page.getByTestId("chat-panel").getByText("What architecture did we decide for ContextWeave?")).toBeVisible();
-    await expect(page.getByTestId("summary-section")).toContainText("Redis and PostgreSQL");
+    await expect(page.getByTestId("summary-section")).toContainText("FastAPI");
     await expect(page.getByTestId("facts-section")).toContainText("GitHub Pages");
     await expect(page.getByTestId("chunks-section")).toContainText("Railway");
   });
@@ -37,6 +39,19 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("message-assistant").last()).toContainText(/FastAPI|remembered context|Grounded mock response/);
     await expect(page.getByTestId("facts-section")).toContainText("FastAPI");
     await expect(page.getByTestId("summary-section")).not.toBeEmpty();
+  });
+
+  test("keeps chat working when memory is turned off", async ({ page }) => {
+    await page.getByTestId("memory-off").click();
+    await expect(page.getByTestId("memory-off")).toHaveAttribute("aria-pressed", "true");
+
+    await page.getByTestId("message-input").fill("What architecture did we decide?");
+    await page.getByTestId("send-message").click();
+
+    await expect(page.getByTestId("message-assistant").last()).toContainText("Memory is off");
+    await expect(page.getByTestId("summary-section")).toContainText("Disabled for this turn");
+    await expect(page.getByTestId("facts-section")).toContainText("Persistent facts were not pulled");
+    await expect(page.getByTestId("packed-context-section")).toContainText("Current user message:");
   });
 });
 
@@ -57,6 +72,7 @@ test.describe("ContextWeave demo mobile", () => {
     await expect(page.getByTestId("chat-panel")).toBeVisible();
     await expect(page.getByTestId("message-input")).toBeVisible();
     await expect(page.getByTestId("load-demo-session")).toBeVisible();
+    await expect(page.getByTestId("memory-toggle")).toBeVisible();
 
     const hasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     expect(hasOverflow).toBeFalsy();
@@ -74,6 +90,7 @@ test.describe("ContextWeave demo mobile", () => {
     await expect(page.getByTestId("summary-section")).toBeVisible();
     await expect(page.getByTestId("facts-section")).toBeVisible();
     await expect(page.getByTestId("chunks-section")).toBeVisible();
+    await expect(page.getByTestId("packed-context-section")).toBeVisible();
 
     const loadDemoBox = await page.getByTestId("load-demo-session").boundingBox();
     const openSessionBox = await page.getByTestId("open-session").boundingBox();

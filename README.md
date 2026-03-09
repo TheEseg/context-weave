@@ -54,11 +54,25 @@ ContextWeave uses:
 - a context builder that assembles grounded memory before response generation
 - a mock LLM provider for local demos and an optional OpenAI-backed provider
 
+## Architecture
+
+```mermaid
+flowchart TD
+    A["Frontend Demo<br/>GitHub Pages"] --> B["FastAPI API"]
+    B --> C["Context Builder"]
+    C --> D["Redis<br/>Short-term memory"]
+    C --> E["PostgreSQL<br/>Sessions and persistent facts"]
+    C --> F["Retrieval layer"]
+    C --> G["Context packing"]
+    G --> H["LLM provider<br/>Mock or OpenAI"]
+    H --> B
+```
+
 ## Architecture Overview
 
 `POST /chat` validates the request, loads or creates the session, builds a context pack from Redis and PostgreSQL, generates a grounded response, persists both messages, refreshes short-term memory, updates the summary, and stores newly extracted facts.
 
-The browser demo adds a lightweight frontend layer on top of that flow. A chat panel drives the conversation, while a context inspector shows the summary, extracted facts, retrieved chunks, and runtime metadata that make each response context-aware.
+The browser demo adds a lightweight frontend layer on top of that flow. A chat panel drives the conversation, while a context inspector shows the summary, extracted facts, retrieved chunks, the final packed context, and runtime metadata that make each response context-aware. The UI also supports a Memory ON/OFF comparison mode so the difference between direct prompting and layered memory stays visible.
 
 More detail:
 
@@ -72,6 +86,8 @@ More detail:
 
 - FastAPI app with `GET /health` and `POST /chat`
 - React + Vite frontend demo with a context inspector
+- Context Debugger view for the final packed context sent to the provider
+- Memory ON/OFF comparison mode in the demo UI
 - PostgreSQL persistence for sessions, messages, facts, documents, and chunks
 - Redis working memory
 - sample document ingestion from [`examples/sample_documents`](/Users/ivanesegovic/Documents/Codex/context-weave/examples/sample_documents)
@@ -130,7 +146,7 @@ make frontend-install
 make frontend-dev
 ```
 
-The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. Set `VITE_DEMO_MODE=true` to force browser-only fallback mode. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, and debug metadata behind the conversation.
+The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. Set `VITE_DEMO_MODE=true` to force browser-only fallback mode. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, the final packed context, and debug metadata behind the conversation.
 
 For GitHub Pages, the frontend is built with the `/context-weave/` base path and deployed independently from the backend.
 The demo is optimized for both desktop and mobile viewing, with the chat flow prioritized on smaller screens.

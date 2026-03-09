@@ -3,17 +3,20 @@ import { InspectorSection } from "./InspectorSection";
 
 type ChunksCardProps = {
   chunks: SessionChunk[];
+  memoryEnabled: boolean;
 };
 
-export function ChunksCard({ chunks }: ChunksCardProps) {
+export function ChunksCard({ chunks, memoryEnabled }: ChunksCardProps) {
   return (
     <InspectorSection
       title="Relevant chunks"
       subtitle="Retrieval"
-      meta={<span className="card-tag">{chunks.length} matched</span>}
+      meta={<span className="card-tag">{memoryEnabled ? `${chunks.length} matched` : "Disabled"}</span>}
       testId="chunks-section"
     >
-      {chunks.length === 0 ? (
+      {!memoryEnabled ? (
+        <p className="card-body">Disabled for this turn. Retrieval was bypassed and no document chunks were packed.</p>
+      ) : chunks.length === 0 ? (
         <p className="card-body">No supporting document chunks were retrieved for the current session context.</p>
       ) : (
         <div className="chunk-list">

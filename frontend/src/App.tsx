@@ -4,7 +4,7 @@ import { API_BASE_URL, DEMO_MODE, getHealth, getSessionContext, sendChatMessage 
 import { ChatPanel } from "./components/ChatPanel";
 import { ContextInspector } from "./components/ContextInspector";
 import { Header } from "./components/Header";
-import type { SessionContext } from "./types";
+import type { ContextDebug, SessionContext } from "./types";
 
 const DEMO_SESSION_ID = "demo-session";
 const DEMO_USER_ID = "demo-user";
@@ -16,6 +16,8 @@ export default function App() {
   const [draftSessionId, setDraftSessionId] = useState(DEMO_SESSION_ID);
   const [draftUserId, setDraftUserId] = useState(DEMO_USER_ID);
   const [context, setContext] = useState<SessionContext | null>(null);
+  const [latestDebug, setLatestDebug] = useState<ContextDebug | null>(null);
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
@@ -54,11 +56,13 @@ export default function App() {
     setChatLoading(true);
     setChatError(null);
     try {
-      await sendChatMessage({
+      const result = await sendChatMessage({
         session_id: sessionId,
         user_id: userId,
         message,
+        memory_enabled: memoryEnabled,
       });
+      setLatestDebug(result.debug ?? null);
       await loadContext(sessionId);
     } catch (error) {
       setChatError(
@@ -74,10 +78,12 @@ export default function App() {
   function handleApplySession() {
     setSessionId(draftSessionId.trim() || DEMO_SESSION_ID);
     setUserId(draftUserId.trim() || DEMO_USER_ID);
+    setLatestDebug(null);
   }
 
   function handleResetSession() {
     setContext(null);
+    setLatestDebug(null);
     setChatError(null);
     setContextError(null);
   }
@@ -87,6 +93,8 @@ export default function App() {
     setDraftUserId(DEMO_USER_ID);
     setSessionId(DEMO_SESSION_ID);
     setUserId(DEMO_USER_ID);
+    setLatestDebug(null);
+    setMemoryEnabled(true);
   }
 
   return (
@@ -107,10 +115,18 @@ export default function App() {
           onApplySession={handleApplySession}
           onResetSession={handleResetSession}
           onLoadDemo={handleLoadDemo}
+          memoryEnabled={memoryEnabled}
+          onMemoryEnabledChange={setMemoryEnabled}
           onSendMessage={handleSendMessage}
         />
 
-        <ContextInspector context={context} loading={contextLoading} error={contextError} />
+        <ContextInspector
+          context={context}
+          debug={latestDebug}
+          memoryEnabled={memoryEnabled}
+          loading={contextLoading}
+          error={contextError}
+        />
       </main>
 
       <footer className="app-footer">
