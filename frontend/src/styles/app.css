@@ -126,6 +126,20 @@ pre {
   text-decoration: none;
 }
 
+.endpoint-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: inherit;
+}
+
+.endpoint-block span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
 .mode-pill {
   padding: 6px 10px;
   border-radius: 999px;
@@ -179,6 +193,12 @@ pre {
 
 .panel-heading h2 {
   font-size: 1.5rem;
+}
+
+.panel-intro {
+  margin: 10px 0 0;
+  max-width: 36rem;
+  color: var(--muted);
 }
 
 .session-controls {
@@ -361,6 +381,7 @@ button:disabled {
 .inspector-intro {
   margin: 0 0 18px;
   color: var(--muted);
+  max-width: 34rem;
 }
 
 .inspector-status,
@@ -524,6 +545,10 @@ pre {
   .header-meta {
     align-items: flex-start;
     text-align: left;
+  }
+
+  .endpoint-block {
+    align-items: flex-start;
   }
 
   .session-controls,

@@ -29,7 +29,10 @@ export function Header({ healthStatus, apiBaseUrl, demoMode }: HeaderProps) {
         <span className={`status-pill status-${healthStatus}`}>
           {demoMode ? "GitHub Pages demo" : "Railway backend"}
         </span>
-        <code>{apiBaseUrl}</code>
+        <div className="endpoint-block">
+          <span>API endpoint</span>
+          <code>{apiBaseUrl}</code>
+        </div>
       </div>
     </header>
   );

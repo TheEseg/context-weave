@@ -15,55 +15,75 @@ function createSeededSession(): SessionContext {
     messages: [
       {
         role: "user",
-        content: "The architecture uses FastAPI, Redis, and PostgreSQL.",
+        content: "The project uses Redis and PostgreSQL for memory and persistence.",
       },
       {
         role: "assistant",
         content:
-          "Stored the selected stack in layered memory so later turns can recall it through summary, facts, and retrieval context.",
+          "Stored Redis and PostgreSQL as durable architecture facts for this session.",
       },
       {
         role: "user",
-        content: "The report name is rai_occulto.",
+        content: "The frontend is deployed on GitHub Pages and the backend on Railway.",
       },
       {
         role: "assistant",
-        content: "Captured the report identifier for future turns.",
+        content:
+          "Captured the deployment split: GitHub Pages for the frontend demo and Railway for the backend service.",
+      },
+      {
+        role: "user",
+        content: "What architecture did we decide for ContextWeave?",
+      },
+      {
+        role: "assistant",
+        content:
+          "For ContextWeave we settled on Redis and PostgreSQL behind the backend, with the frontend served from GitHub Pages and the API running on Railway.",
       },
     ],
     recent_messages: [
       {
         role: "user",
-        content: "The architecture uses FastAPI, Redis, and PostgreSQL.",
+        content: "The project uses Redis and PostgreSQL for memory and persistence.",
       },
       {
         role: "assistant",
         content:
-          "Stored the selected stack in layered memory so later turns can recall it through summary, facts, and retrieval context.",
+          "Stored Redis and PostgreSQL as durable architecture facts for this session.",
       },
       {
         role: "user",
-        content: "The report name is rai_occulto.",
+        content: "The frontend is deployed on GitHub Pages and the backend on Railway.",
       },
       {
         role: "assistant",
-        content: "Captured the report identifier for future turns.",
+        content:
+          "Captured the deployment split: GitHub Pages for the frontend demo and Railway for the backend service.",
+      },
+      {
+        role: "user",
+        content: "What architecture did we decide for ContextWeave?",
+      },
+      {
+        role: "assistant",
+        content:
+          "For ContextWeave we settled on Redis and PostgreSQL behind the backend, with the frontend served from GitHub Pages and the API running on Railway.",
       },
     ],
     summary:
-      "user: The architecture uses FastAPI, Redis, and PostgreSQL. | assistant: Stored the selected stack in layered memory. | user: The report name is rai_occulto.",
+      "Session summary: Redis and PostgreSQL were selected for memory and persistence. The frontend is deployed on GitHub Pages, and the backend runs on Railway.",
     facts: [
-      { fact_key: "technology", fact_value: "FastAPI" },
       { fact_key: "technology", fact_value: "Redis" },
       { fact_key: "technology", fact_value: "PostgreSQL" },
-      { fact_key: "report_name", fact_value: "rai_occulto" },
+      { fact_key: "frontend_hosting", fact_value: "GitHub Pages" },
+      { fact_key: "backend_hosting", fact_value: "Railway" },
     ],
     chunks: [
       {
-        document_title: "Demo Stack",
+        document_title: "Deployment Notes",
         chunk_index: 0,
         content:
-          "The demo implementation uses FastAPI for the HTTP API, Redis for short-term memory, and PostgreSQL for durable storage.",
+          "The public demo serves the frontend from GitHub Pages while the backend runs separately on Railway.",
       },
       {
         document_title: "Architecture Principles",
@@ -71,9 +91,15 @@ function createSeededSession(): SessionContext {
         content:
           "ContextWeave separates working memory from durable memory so the system can rebuild context after long gaps.",
       },
+      {
+        document_title: "Storage Stack",
+        chunk_index: 0,
+        content:
+          "Redis supports short-term working memory while PostgreSQL stores sessions, messages, facts, documents, and chunks.",
+      },
     ],
     task_state: {
-      last_user_message: "The report name is rai_occulto.",
+      last_user_message: "What architecture did we decide for ContextWeave?",
     },
   };
 }
@@ -120,6 +146,14 @@ function extractFacts(message: string): SessionContext["facts"] {
     }
   }
 
+  if (lower.includes("github pages")) {
+    facts.push({ fact_key: "frontend_hosting", fact_value: "GitHub Pages" });
+  }
+
+  if (lower.includes("railway")) {
+    facts.push({ fact_key: "backend_hosting", fact_value: "Railway" });
+  }
+
   const reportMatch = message.match(/report name is ([a-zA-Z0-9_-]+)/i);
   if (reportMatch) {
     facts.push({ fact_key: "report_name", fact_value: reportMatch[1] });
@@ -133,16 +167,30 @@ function buildAssistantResponse(session: SessionContext, message: string): strin
   const technologies = session.facts
     .filter((fact) => fact.fact_key === "technology")
     .map((fact) => fact.fact_value);
+  const frontendHosting = session.facts.find((fact) => fact.fact_key === "frontend_hosting")?.fact_value;
+  const backendHosting = session.facts.find((fact) => fact.fact_key === "backend_hosting")?.fact_value;
 
-  if (lower.includes("which stack") || lower.includes("what stack") || lower.includes("chosen stack")) {
-    if (technologies.length > 0) {
-      return `The stack currently in memory is ${Array.from(new Set(technologies)).join(", ")}.`;
+  if (
+    lower.includes("which stack") ||
+    lower.includes("what stack") ||
+    lower.includes("chosen stack") ||
+    lower.includes("what architecture") ||
+    lower.includes("architecture did we decide")
+  ) {
+    if (technologies.length > 0 || frontendHosting || backendHosting) {
+      const stackPart =
+        technologies.length > 0 ? `Redis and PostgreSQL are the remembered storage components.` : "";
+      const hostingPart =
+        frontendHosting || backendHosting
+          ? ` The demo delivery split is ${frontendHosting ?? "the frontend"} for the frontend and ${backendHosting ?? "the backend"} for the backend.`
+          : "";
+      return `${stackPart}${hostingPart}`.trim();
     }
   }
 
   if (session.facts.length > 0) {
-    return `Grounded mock response from remembered facts: ${session.facts
-      .slice(0, 3)
+    return `Grounded mock response from remembered context: ${session.facts
+      .slice(0, 4)
       .map((fact) => `${fact.fact_key}=${fact.fact_value}`)
       .join("; ")}.`;
   }

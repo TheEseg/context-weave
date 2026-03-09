@@ -52,6 +52,9 @@ export function ChatPanel({
         <div>
           <p className="section-kicker">Conversation</p>
           <h2>Chat panel</h2>
+          <p className="panel-intro">
+            Use the demo session to show how earlier architecture decisions stay available in later turns.
+          </p>
         </div>
         <button className="secondary-button" onClick={onLoadDemo} type="button">
           Load demo session
