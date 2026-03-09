@@ -25,6 +25,12 @@ The current public setup serves the frontend from GitHub Pages and the backend f
 
 If no public backend is available, the Pages build can run with `VITE_DEMO_MODE=true`, which enables a browser-only fallback flow that still demonstrates conversation continuity, summary updates, extracted facts, and retrieved chunks.
 
+## Demo Preview
+
+<p align="center">
+  <img src="assets/screenshots/contextweave-hero.png" alt="ContextWeave demo overview" width="1100" />
+</p>
+
 ## Why This Project Exists
 
 Many AI applications still treat context as whatever fits inside the current prompt. That works for short demos, but it breaks down when conversations span multiple topics, sessions, or time horizons. ContextWeave exists to show a practical alternative: keep working memory explicit, make durable memory inspectable, and build each response from a grounded context pack.
