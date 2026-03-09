@@ -15,11 +15,16 @@ export function DebugCard({
   recentMessages,
   taskState,
 }: DebugCardProps) {
+  const taskStateKeys = Object.keys(taskState);
+
   return (
     <section className="inspector-card">
       <div className="card-header">
-        <p className="section-kicker">Inspector</p>
-        <h3>Debug metadata</h3>
+        <div>
+          <p className="section-kicker">Inspector</p>
+          <h3>Debug metadata</h3>
+        </div>
+        <span className="card-tag">{recentMessages.length} recent</span>
       </div>
 
       <dl className="metadata-grid">
@@ -43,7 +48,7 @@ export function DebugCard({
 
       <div className="subsection">
         <h4>Task state</h4>
-        {Object.keys(taskState).length === 0 ? (
+        {taskStateKeys.length === 0 ? (
           <p className="card-body muted">No task-state values stored yet.</p>
         ) : (
           <pre>{JSON.stringify(taskState, null, 2)}</pre>
@@ -68,4 +73,3 @@ export function DebugCard({
     </section>
   );
 }
-

@@ -11,6 +11,8 @@ type ContextInspectorProps = {
 };
 
 export function ContextInspector({ context, loading, error }: ContextInspectorProps) {
+  const hasContext = Boolean(context);
+
   return (
     <aside className="panel inspector-panel">
       <div className="panel-heading">
@@ -18,6 +20,7 @@ export function ContextInspector({ context, loading, error }: ContextInspectorPr
           <p className="section-kicker">Context continuity</p>
           <h2>Context inspector</h2>
         </div>
+        <span className="inspector-status">{hasContext ? "Context loaded" : "Awaiting session data"}</span>
       </div>
 
       <p className="inspector-intro">
@@ -25,7 +28,11 @@ export function ContextInspector({ context, loading, error }: ContextInspectorPr
       </p>
 
       {loading ? <div className="loading-card">Refreshing context pack…</div> : null}
-      {error ? <div className="error-banner">{error}</div> : null}
+      {error ? (
+        <div className="error-banner">
+          <strong>Context refresh issue.</strong> {error}
+        </div>
+      ) : null}
 
       {!context && !loading ? (
         <div className="empty-state compact">
@@ -51,4 +58,3 @@ export function ContextInspector({ context, loading, error }: ContextInspectorPr
     </aside>
   );
 }
-

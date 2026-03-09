@@ -15,6 +15,7 @@ Try the public demo here:
 **[ContextWeave Demo](https://theeseg.github.io/context-weave/)**
 
 GitHub Pages hosts only the static frontend. The backend remains separate and is configured through `VITE_API_BASE_URL`.
+The current public setup serves the frontend from GitHub Pages and the backend from Railway.
 
 If no public backend is available, the Pages build can run with `VITE_DEMO_MODE=true`, which enables a browser-only fallback flow that still demonstrates conversation continuity, summary updates, extracted facts, and retrieved chunks.
 

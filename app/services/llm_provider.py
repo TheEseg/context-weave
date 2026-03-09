@@ -14,25 +14,37 @@ class BaseLLMProvider(ABC):
 
 class MockLLMProvider(BaseLLMProvider):
     def generate(self, user_message: str, context: ContextPack) -> str:
-        if "which stack" in user_message.lower() or "what stack" in user_message.lower():
+        lower_message = user_message.lower()
+
+        if "which stack" in lower_message or "what stack" in lower_message:
             technologies = sorted({fact["fact_value"] for fact in context.facts if fact["fact_key"] == "technology"})
             if technologies:
-                return "The current stack in context is " + ", ".join(technologies) + "."
+                summary_hint = f" The session summary also points to: {context.summary[:120]}." if context.summary else ""
+                return "Based on the stored session context, the stack is " + ", ".join(technologies) + "." + summary_hint
+
+        if "report name" in lower_message:
+            report_name = next((fact["fact_value"] for fact in context.facts if fact["fact_key"] == "report_name"), None)
+            if report_name:
+                return f"The report name currently remembered for this session is {report_name}."
 
         if context.facts:
             fact_lines = [f'{fact["fact_key"]}={fact["fact_value"]}' for fact in context.facts[:3]]
-            return "Grounded response based on stored facts: " + "; ".join(fact_lines) + "."
+            response = "I answered from durable session facts: " + "; ".join(fact_lines) + "."
+            if context.summary:
+                response += " Summary context: " + context.summary[:120] + "."
+            return response
 
         if context.chunks:
-            return "Grounded response from retrieved documents: " + context.chunks[0]["content"][:220]
+            return (
+                "I answered from retrieved document support: "
+                + str(context.chunks[0]["content"])[:220]
+                + "."
+            )
 
         if context.summary:
-            return "Grounded response from session summary: " + context.summary[:220]
+            return "I used the running session summary to stay consistent: " + context.summary[:220] + "."
 
-        return (
-            "Mock response: I received your message and stored it in ContextWeave. "
-            "Future turns can recall it from layered memory."
-        )
+        return "I stored this turn in ContextWeave. Future turns can recall it through summary, facts, and retrieval context."
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -58,4 +70,3 @@ def build_llm_provider(settings: Settings) -> BaseLLMProvider:
     if settings.llm_provider.lower() == "openai" and settings.openai_api_key:
         return OpenAIProvider(api_key=settings.openai_api_key)
     return MockLLMProvider()
-

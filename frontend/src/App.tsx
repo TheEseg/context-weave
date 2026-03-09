@@ -39,8 +39,12 @@ export default function App() {
       setContext(nextContext);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to load session context";
-      setContext(null);
-      setContextError(message);
+      if (message.includes("not found")) {
+        setContext(null);
+        setContextError("No stored context exists yet for this session. Send a message to start building memory.");
+      } else {
+        setContextError("Unable to refresh context inspector. The latest session view may be stale.");
+      }
     } finally {
       setContextLoading(false);
     }
@@ -57,7 +61,11 @@ export default function App() {
       });
       await loadContext(sessionId);
     } catch (error) {
-      setChatError(error instanceof Error ? error.message : "Unable to send message");
+      setChatError(
+        error instanceof Error
+          ? error.message
+          : "Unable to send message. Check whether the Railway backend is reachable.",
+      );
     } finally {
       setChatLoading(false);
     }

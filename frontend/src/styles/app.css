@@ -363,6 +363,16 @@ button:disabled {
   color: var(--muted);
 }
 
+.inspector-status,
+.card-tag {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--accent-soft);
+  background: rgba(77, 183, 255, 0.1);
+  border: 1px solid rgba(127, 223, 255, 0.16);
+}
+
 .inspector-stack {
   display: flex;
   flex-direction: column;
@@ -377,6 +387,10 @@ button:disabled {
 }
 
 .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
@@ -505,17 +519,6 @@ pre {
 
   .brand-lockup {
     align-items: flex-start;
-  }
-
-  .brand-hero {
-    min-height: 74px;
-    padding-right: 0;
-  }
-
-  .brand-logo-fade {
-    right: -40px;
-    width: 180px;
-    opacity: 0.06;
   }
 
   .header-meta {

@@ -5,6 +5,9 @@ type HeaderProps = {
 };
 
 export function Header({ healthStatus, apiBaseUrl, demoMode }: HeaderProps) {
+  const backendLabel = demoMode ? "Mock backend" : healthStatus === "online" ? "Live backend" : "Backend offline";
+  const providerLabel = demoMode ? "Mock provider" : "Live provider";
+
   return (
     <header className="app-header">
       <div className="brand-block">
@@ -21,9 +24,10 @@ export function Header({ healthStatus, apiBaseUrl, demoMode }: HeaderProps) {
         <a href="https://github.com/" target="_blank" rel="noreferrer">
           GitHub
         </a>
-        {demoMode ? <span className="mode-pill">Demo mode</span> : null}
+        <span className="mode-pill">{backendLabel}</span>
+        <span className="mode-pill">{providerLabel}</span>
         <span className={`status-pill status-${healthStatus}`}>
-          Backend {healthStatus === "checking" ? "checking" : healthStatus}
+          {demoMode ? "GitHub Pages demo" : "Railway backend"}
         </span>
         <code>{apiBaseUrl}</code>
       </div>
