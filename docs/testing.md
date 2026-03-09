@@ -54,6 +54,37 @@ npm run test:e2e:headed
 npm run test:e2e:ui
 ```
 
+## CI Coverage
+
+GitHub Actions runs a lightweight CI workflow on pushes to `main` and on pull requests.
+
+It checks:
+
+- backend dependency install
+- backend test suite via `pytest`
+- frontend dependency install
+- frontend production build
+- Playwright end-to-end tests against the demo UI
+
+### Reproducing CI Locally
+
+Backend:
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm ci
+npx playwright install chromium
+VITE_DEMO_MODE=true npm run build
+VITE_DEMO_MODE=true npm run test:e2e
+```
+
 ## What Success Looks Like
 
 - deterministic unit results
