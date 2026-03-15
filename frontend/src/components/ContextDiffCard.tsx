@@ -26,53 +26,62 @@ export function ContextDiffCard({ contextDiff }: ContextDiffCardProps) {
           <div className="diff-summary-bar">
             <p className="packed-context-meta">These context elements changed since the previous turn.</p>
             <div className="diff-stat-chips">
-              <span className="diff-stat diff-stat-added">+ {added.length}</span>
-              <span className="diff-stat diff-stat-removed">- {removed.length}</span>
-              <span className="diff-stat diff-stat-unchanged">• {unchanged.length}</span>
+              <span className="diff-stat diff-stat-added">{added.length} added</span>
+              <span className="diff-stat diff-stat-removed">{removed.length} removed</span>
+              <span className="diff-stat diff-stat-unchanged">{unchanged.length} unchanged</span>
             </div>
           </div>
-          {total === 0 ? <p className="card-body">No context changes since the previous turn.</p> : null}
-
-          <div className="diff-columns">
-            <section className="diff-group diff-group-added" data-testid="diff-group-added">
-              <div className="diff-group-heading">
-                <h4>Added ({added.length})</h4>
-                <span>New context brought into this turn</span>
-              </div>
-              {added.length === 0 ? (
-                <p className="card-body muted">No added elements.</p>
-              ) : (
-                <DiffList items={added} prefix="+" variant="added" />
-              )}
-            </section>
-            <section className="diff-group diff-group-removed" data-testid="diff-group-removed">
-              <div className="diff-group-heading">
-                <h4>Removed ({removed.length})</h4>
-                <span>No longer included in the packed context</span>
-              </div>
-              {removed.length === 0 ? (
-                <p className="card-body muted">No removed elements.</p>
-              ) : (
-                <DiffList items={removed} prefix="-" variant="removed" />
-              )}
-            </section>
-            <details className="diff-group diff-group-unchanged diff-group-collapsible" data-testid="diff-group-unchanged">
-              <summary className="diff-group-summary">
+          {total === 0 ? (
+            <div className="diff-empty-state">
+              <strong>No context changes since the previous turn.</strong>
+              <span>The packed context remained stable across these two turns.</span>
+            </div>
+          ) : (
+            <div className="diff-layout">
+              <section className="diff-group diff-group-added diff-group-primary" data-testid="diff-group-added">
                 <div className="diff-group-heading">
-                  <h4>Unchanged ({unchanged.length})</h4>
-                  <span>Still supporting the current turn</span>
+                  <h4>Added ({added.length})</h4>
+                  <span>New context brought into this turn</span>
                 </div>
-                <span className="diff-collapse-label">{unchanged.length > 0 ? "Show" : "Empty"}</span>
-              </summary>
-              <div className="diff-group-body">
-                {unchanged.length === 0 ? (
-                  <p className="card-body muted">No unchanged elements.</p>
+                {added.length === 0 ? (
+                  <p className="card-body muted">No added elements.</p>
                 ) : (
-                  <DiffList items={unchanged} prefix="•" variant="unchanged" />
+                  <DiffList items={added} prefix="+" variant="added" />
                 )}
+              </section>
+
+              <div className="diff-side-stack">
+                <section className="diff-group diff-group-removed" data-testid="diff-group-removed">
+                  <div className="diff-group-heading">
+                    <h4>Removed ({removed.length})</h4>
+                    <span>No longer included in the packed context</span>
+                  </div>
+                  {removed.length === 0 ? (
+                    <p className="card-body muted">No removed elements.</p>
+                  ) : (
+                    <DiffList items={removed} prefix="-" variant="removed" />
+                  )}
+                </section>
+
+                <details className="diff-group diff-group-unchanged diff-group-collapsible" data-testid="diff-group-unchanged">
+                  <summary className="diff-group-summary">
+                    <div className="diff-group-heading">
+                      <h4>Unchanged ({unchanged.length})</h4>
+                      <span>Still supporting the current turn</span>
+                    </div>
+                    <span className="diff-collapse-label">{unchanged.length > 0 ? "Show" : "Empty"}</span>
+                  </summary>
+                  <div className="diff-group-body">
+                    {unchanged.length === 0 ? (
+                      <p className="card-body muted">No unchanged elements.</p>
+                    ) : (
+                      <DiffList items={unchanged} prefix="•" variant="unchanged" />
+                    )}
+                  </div>
+                </details>
               </div>
-            </details>
-          </div>
+            </div>
+          )}
         </div>
       )}
     </section>
