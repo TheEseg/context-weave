@@ -15,6 +15,7 @@ export function ChunksCard({ chunks, memoryEnabled }: ChunksCardProps) {
         </div>
         <span className="card-tag">{memoryEnabled ? `${chunks.length} matched` : "Disabled"}</span>
       </div>
+      <p className="card-subtitle">Retrieved supporting text that helps ground the current response.</p>
       {!memoryEnabled ? (
         <p className="card-body">Disabled for this turn. Retrieval was bypassed and no document chunks were packed.</p>
       ) : chunks.length === 0 ? (

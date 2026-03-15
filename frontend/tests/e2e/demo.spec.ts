@@ -28,12 +28,14 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("chat-panel").getByText("What architecture did we decide for ContextWeave?")).toBeVisible();
     await expect(page.getByTestId("timeline-turn").first()).toBeVisible();
     await expect(page.getByTestId("inspector-tab-memory")).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByTestId("context-stats-section")).toContainText("Context stats");
     await expect(page.getByTestId("summary-section")).toContainText("FastAPI");
     await expect(page.getByTestId("facts-section")).toContainText("GitHub Pages");
     await expect(page.getByTestId("chunks-section")).toContainText("Railway");
 
     await page.getByTestId("inspector-tab-diff").click();
     await expect(page.getByTestId("context-diff-section")).toContainText("These context elements changed since the previous turn.");
+    await expect(page.getByTestId("context-diff-section")).toContainText("Added");
   });
 
   test("sends a new message and keeps the inspector populated", async ({ page }) => {
@@ -118,9 +120,12 @@ test.describe("ContextWeave demo mobile", () => {
     await page.getByTestId("context-inspector").scrollIntoViewIfNeeded();
     await expect(page.getByTestId("context-timeline")).toBeVisible();
 
+    await expect(page.getByTestId("context-stats-section")).toBeVisible();
     await expect(page.getByTestId("summary-section")).toBeVisible();
     await expect(page.getByTestId("facts-section")).toBeVisible();
     await expect(page.getByTestId("chunks-section")).toBeVisible();
+    await page.getByTestId("inspector-tab-diff").click();
+    await expect(page.getByTestId("context-diff-section")).toBeVisible();
     await page.getByTestId("inspector-tab-budget").click();
     await expect(page.getByTestId("context-budget-section")).toBeVisible();
     await page.getByTestId("inspector-tab-prompt").click();

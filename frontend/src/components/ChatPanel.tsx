@@ -13,6 +13,7 @@ type ChatPanelProps = {
   loading: boolean;
   error: string | null;
   memoryEnabled: boolean;
+  processingLabel?: string | null;
   onSessionIdChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
   onApplySession: () => void;
@@ -30,6 +31,7 @@ export function ChatPanel({
   loading,
   error,
   memoryEnabled,
+  processingLabel,
   onSessionIdChange,
   onUserIdChange,
   onApplySession,
@@ -55,7 +57,7 @@ export function ChatPanel({
           <p className="section-kicker">Conversation</p>
           <h2>Chat panel</h2>
           <p className="panel-intro">
-            Use the demo session to show how earlier architecture decisions stay available in later turns.
+            Ask, branch, and come back later. The inspector shows how ContextWeave rebuilds the next prompt from layered memory.
           </p>
         </div>
       </div>
@@ -86,7 +88,7 @@ export function ChatPanel({
         </div>
       </div>
 
-      <MessageList messages={messages} debug={debug} loading={loading} />
+      <MessageList messages={messages} debug={debug} loading={loading} processingLabel={processingLabel} />
 
       {error ? <div className="error-banner">{error}</div> : null}
 

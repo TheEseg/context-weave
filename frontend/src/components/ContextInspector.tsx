@@ -6,6 +6,7 @@ import { ContextBudgetCard } from "./ContextBudgetCard";
 import { ContextDiffCard } from "./ContextDiffCard";
 import { DebugCard } from "./DebugCard";
 import { FactsCard } from "./FactsCard";
+import { ContextStatsCard } from "./ContextStatsCard";
 import { PackedContextCard } from "./PackedContextCard";
 import { SummaryCard } from "./SummaryCard";
 
@@ -104,6 +105,13 @@ export function ContextInspector({
 
           {activeTab === "memory" ? (
             <div className="tab-panel-grid" data-testid="inspector-panel-memory">
+              <ContextStatsCard
+                factsCount={facts.length}
+                chunksCount={chunks.length}
+                recentMessagesCount={recentMessages.length}
+                packedContextChars={contextLengthChars ?? packedContext.length}
+                memoryEnabled={resolvedMemoryEnabled}
+              />
               <SummaryCard summary={summary} memoryEnabled={resolvedMemoryEnabled} />
               <FactsCard facts={facts} memoryEnabled={resolvedMemoryEnabled} />
               <section className="inspector-card-panel" data-testid="recent-messages-section">
@@ -114,6 +122,7 @@ export function ContextInspector({
                   </div>
                   <span className="card-tag">{resolvedMemoryEnabled ? `${recentMessages.length} recent` : "Disabled"}</span>
                 </div>
+                <p className="card-subtitle">Latest turns still available in working memory for context reconstruction.</p>
                 {!resolvedMemoryEnabled ? (
                   <p className="card-body">Disabled for this turn. Recent working memory was bypassed.</p>
                 ) : recentMessages.length === 0 ? (

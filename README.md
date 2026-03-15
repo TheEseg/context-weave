@@ -117,7 +117,7 @@ More detail:
 ## Features
 
 - public frontend demo with chat panel and Context Inspector
-- tabbed inspector workspace and context timeline for turn-by-turn debugging
+- tabbed inspector workspace, context stats, and context timeline for turn-by-turn debugging
 - Context Debugger for the final packed context sent to the provider
 - Context Budget Visualizer for per-layer prompt usage and limit warnings
 - Memory ON/OFF comparison mode

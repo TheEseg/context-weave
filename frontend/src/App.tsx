@@ -22,6 +22,7 @@ export default function App() {
   const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
+  const [processingLabel, setProcessingLabel] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [contextError, setContextError] = useState<string | null>(null);
   const [contextDiffError, setContextDiffError] = useState<string | null>(null);
@@ -72,7 +73,9 @@ export default function App() {
   async function handleSendMessage(message: string) {
     setChatLoading(true);
     setChatError(null);
+    setProcessingLabel("Building context...");
     try {
+      setProcessingLabel(memoryEnabled ? "Retrieving memory..." : "Packing prompt...");
       const result = await sendChatMessage({
         session_id: sessionId,
         user_id: userId,
@@ -80,6 +83,7 @@ export default function App() {
         memory_enabled: memoryEnabled,
       });
       setLatestDebug(result.debug ?? null);
+      setProcessingLabel("Refreshing inspector...");
       await loadContext(sessionId);
     } catch (error) {
       setChatError(
@@ -88,6 +92,7 @@ export default function App() {
           : "Unable to send message. Check whether the Railway backend is reachable.",
       );
     } finally {
+      setProcessingLabel(null);
       setChatLoading(false);
     }
   }
@@ -153,6 +158,7 @@ export default function App() {
           onApplySession={handleApplySession}
           onLoadDemo={handleLoadDemo}
           memoryEnabled={memoryEnabled}
+          processingLabel={processingLabel}
           onSendMessage={handleSendMessage}
         />
 

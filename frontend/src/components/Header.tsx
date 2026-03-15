@@ -32,6 +32,7 @@ export function Header({
           </div>
         </div>
         <p className="tagline">Context continuity beyond the prompt.</p>
+        <p className="header-note">Inspect how context is reconstructed across LLM interactions.</p>
       </div>
 
       <div className="header-workspace">

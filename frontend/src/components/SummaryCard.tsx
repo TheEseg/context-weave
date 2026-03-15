@@ -13,6 +13,7 @@ export function SummaryCard({ summary, memoryEnabled }: SummaryCardProps) {
         </div>
         <span className="card-tag">{memoryEnabled ? "Compressed view" : "Disabled"}</span>
       </div>
+      <p className="card-subtitle">A compact session narrative used to keep long conversations bounded.</p>
       <p className="card-body">
         {!memoryEnabled
           ? "Disabled for this turn. ContextWeave bypassed summary reconstruction and sent only the current user message."

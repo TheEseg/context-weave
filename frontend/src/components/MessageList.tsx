@@ -4,9 +4,10 @@ type MessageListProps = {
   messages: ChatMessage[];
   loading: boolean;
   debug: ContextDebug | null;
+  processingLabel?: string | null;
 };
 
-export function MessageList({ messages, loading, debug }: MessageListProps) {
+export function MessageList({ messages, loading, debug, processingLabel }: MessageListProps) {
   if (messages.length === 0) {
     return (
       <div className="empty-state">
@@ -40,7 +41,12 @@ export function MessageList({ messages, loading, debug }: MessageListProps) {
           ) : null}
         </article>
       ))}
-      {loading ? <div className="message loading-message">Generating grounded response…</div> : null}
+      {loading ? (
+        <div className="message loading-message" data-testid="processing-status">
+          <strong>{processingLabel ?? "Building context..."}</strong>
+          <span>ContextWeave is assembling memory layers and generating the next response.</span>
+        </div>
+      ) : null}
     </div>
   );
 }

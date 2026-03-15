@@ -15,6 +15,7 @@ export function FactsCard({ facts, memoryEnabled }: FactsCardProps) {
         </div>
         <span className="card-tag">{memoryEnabled ? `${facts.length} stored` : "Disabled"}</span>
       </div>
+      <p className="card-subtitle">Durable facts pulled from persistent memory and reused during prompt reconstruction.</p>
       {!memoryEnabled ? (
         <p className="card-body">Disabled for this turn. Persistent facts were not pulled into the model context.</p>
       ) : facts.length === 0 ? (
