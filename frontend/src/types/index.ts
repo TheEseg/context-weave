@@ -30,6 +30,20 @@ export type ContextDebug = {
   context_length_chars: number;
 };
 
+export type ContextDiffItem = {
+  type: string;
+  value: string;
+};
+
+export type ContextDiffResponse = {
+  turn: number;
+  diff: {
+    added: ContextDiffItem[];
+    removed: ContextDiffItem[];
+    unchanged: ContextDiffItem[];
+  };
+};
+
 export type ChatResponse = {
   session_id: string;
   user_id: string;
@@ -46,4 +60,5 @@ export type SessionContext = {
   facts: SessionFact[];
   chunks: SessionChunk[];
   task_state: Record<string, string>;
+  latest_turn: number;
 };

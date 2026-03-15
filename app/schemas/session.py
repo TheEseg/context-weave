@@ -20,6 +20,17 @@ class SessionChunk(BaseModel):
     content: str
 
 
+class ContextDiffItem(BaseModel):
+    type: str
+    value: str
+
+
+class ContextDiffPayload(BaseModel):
+    added: list[ContextDiffItem]
+    removed: list[ContextDiffItem]
+    unchanged: list[ContextDiffItem]
+
+
 class SessionContextResponse(BaseModel):
     session_id: str
     user_id: str
@@ -29,3 +40,9 @@ class SessionContextResponse(BaseModel):
     facts: list[SessionFact]
     chunks: list[SessionChunk]
     task_state: dict[str, str]
+    latest_turn: int
+
+
+class ContextDiffResponse(BaseModel):
+    turn: int
+    diff: ContextDiffPayload

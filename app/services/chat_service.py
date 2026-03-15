@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.db.models import Fact, Message, Session as ChatSession
 from app.memory.context_builder import ContextBuilder, ContextPack
+from app.memory.context_diff import build_context_snapshot
 from app.memory.fact_extractor import FactExtractor
 from app.memory.redis_store import RedisMemoryStore
 from app.memory.summarizer import SessionSummarizer
@@ -80,6 +81,24 @@ class ChatService:
             retrieved_chunks=context.chunks,
             final_packed_context=context.pack_for_model(payload.message),
             context_length_chars=context.context_length_chars(payload.message),
+        )
+        next_turn = self.memory_store.get_latest_turn(session.id) + 1
+        snapshot = build_context_snapshot(
+            turn=next_turn,
+            packed_context=debug.final_packed_context,
+            facts=context.facts,
+            recent_messages=context.recent_messages,
+            retrieved_chunks=context.chunks,
+        )
+        self.memory_store.append_context_snapshot(
+            session.id,
+            {
+                "turn": snapshot.turn,
+                "packed_context": snapshot.packed_context,
+                "facts": snapshot.facts,
+                "recent_messages": snapshot.recent_messages,
+                "retrieved_chunks": snapshot.retrieved_chunks,
+            },
         )
 
         return ChatResponse(

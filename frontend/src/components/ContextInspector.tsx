@@ -1,5 +1,6 @@
-import type { ContextDebug, SessionContext } from "../types";
+import type { ContextDebug, ContextDiffResponse, SessionContext } from "../types";
 import { ChunksCard } from "./ChunksCard";
+import { ContextDiffCard } from "./ContextDiffCard";
 import { DebugCard } from "./DebugCard";
 import { FactsCard } from "./FactsCard";
 import { PackedContextCard } from "./PackedContextCard";
@@ -8,12 +9,22 @@ import { SummaryCard } from "./SummaryCard";
 type ContextInspectorProps = {
   context: SessionContext | null;
   debug: ContextDebug | null;
+  contextDiff: ContextDiffResponse | null;
   memoryEnabled: boolean;
   loading: boolean;
   error: string | null;
+  contextDiffError: string | null;
 };
 
-export function ContextInspector({ context, debug, memoryEnabled, loading, error }: ContextInspectorProps) {
+export function ContextInspector({
+  context,
+  debug,
+  contextDiff,
+  memoryEnabled,
+  loading,
+  error,
+  contextDiffError,
+}: ContextInspectorProps) {
   const hasContext = Boolean(context || debug);
   const resolvedMemoryEnabled = debug?.memory_enabled ?? memoryEnabled;
   const summary = debug?.session_summary ?? context?.summary ?? "";
@@ -68,6 +79,12 @@ export function ContextInspector({ context, debug, memoryEnabled, loading, error
             contextLengthChars={contextLengthChars}
             memoryEnabled={resolvedMemoryEnabled}
           />
+          {contextDiffError ? (
+            <div className="error-banner">
+              <strong>Context diff issue.</strong> {contextDiffError}
+            </div>
+          ) : null}
+          <ContextDiffCard contextDiff={contextDiff} />
           <DebugCard
             sessionId={sessionId}
             userId={userId}

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { API_BASE_URL, DEMO_MODE, getHealth, getSessionContext, sendChatMessage } from "./api/client";
+import { API_BASE_URL, DEMO_MODE, getContextDiff, getHealth, getSessionContext, sendChatMessage } from "./api/client";
 import { ChatPanel } from "./components/ChatPanel";
 import { ContextInspector } from "./components/ContextInspector";
 import { Header } from "./components/Header";
-import type { ContextDebug, SessionContext } from "./types";
+import type { ContextDebug, ContextDiffResponse, SessionContext } from "./types";
 
 const DEMO_SESSION_ID = "demo-session";
 const DEMO_USER_ID = "demo-user";
@@ -17,11 +17,13 @@ export default function App() {
   const [draftUserId, setDraftUserId] = useState(DEMO_USER_ID);
   const [context, setContext] = useState<SessionContext | null>(null);
   const [latestDebug, setLatestDebug] = useState<ContextDebug | null>(null);
+  const [contextDiff, setContextDiff] = useState<ContextDiffResponse | null>(null);
   const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
   const [contextLoading, setContextLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [contextError, setContextError] = useState<string | null>(null);
+  const [contextDiffError, setContextDiffError] = useState<string | null>(null);
 
   useEffect(() => {
     getHealth()
@@ -39,10 +41,24 @@ export default function App() {
     try {
       const nextContext = await getSessionContext(nextSessionId);
       setContext(nextContext);
+      if (nextContext.latest_turn > 0) {
+        try {
+          const nextDiff = await getContextDiff(nextSessionId, nextContext.latest_turn);
+          setContextDiff(nextDiff);
+          setContextDiffError(null);
+        } catch (error) {
+          setContextDiff(null);
+          setContextDiffError(error instanceof Error ? error.message : "Unable to load context diff");
+        }
+      } else {
+        setContextDiff(null);
+        setContextDiffError(null);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to load session context";
       if (message.includes("not found")) {
         setContext(null);
+        setContextDiff(null);
         setContextError("No stored context exists yet for this session. Send a message to start building memory.");
       } else {
         setContextError("Unable to refresh context inspector. The latest session view may be stale.");
@@ -76,16 +92,23 @@ export default function App() {
   }
 
   function handleApplySession() {
-    setSessionId(draftSessionId.trim() || DEMO_SESSION_ID);
-    setUserId(draftUserId.trim() || DEMO_USER_ID);
+    const nextSessionId = draftSessionId.trim() || DEMO_SESSION_ID;
+    const nextUserId = draftUserId.trim() || DEMO_USER_ID;
+    setSessionId(nextSessionId);
+    setUserId(nextUserId);
     setLatestDebug(null);
+    setContextDiff(null);
+    setContextDiffError(null);
+    void loadContext(nextSessionId);
   }
 
   function handleResetSession() {
     setContext(null);
     setLatestDebug(null);
+    setContextDiff(null);
     setChatError(null);
     setContextError(null);
+    setContextDiffError(null);
   }
 
   function handleLoadDemo() {
@@ -94,7 +117,10 @@ export default function App() {
     setSessionId(DEMO_SESSION_ID);
     setUserId(DEMO_USER_ID);
     setLatestDebug(null);
+    setContextDiff(null);
+    setContextDiffError(null);
     setMemoryEnabled(true);
+    void loadContext(DEMO_SESSION_ID);
   }
 
   return (
@@ -123,9 +149,11 @@ export default function App() {
         <ContextInspector
           context={context}
           debug={latestDebug}
+          contextDiff={contextDiff}
           memoryEnabled={memoryEnabled}
           loading={contextLoading}
           error={contextError}
+          contextDiffError={contextDiffError}
         />
       </main>
 

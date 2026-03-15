@@ -33,3 +33,46 @@ def test_session_context_endpoint_returns_messages_and_memory(client, db_session
     assert body["summary"]
     assert any(fact["fact_value"] == "Redis" for fact in body["facts"])
     assert body["task_state"]["last_user_message"] == "The architecture uses Redis and PostgreSQL."
+    assert body["latest_turn"] == 1
+
+
+def test_context_diff_endpoint_compares_current_turn_with_previous(client) -> None:
+    first = client.post(
+        "/chat",
+        json={
+            "session_id": "diff-demo",
+            "user_id": "demo-user",
+            "message": "The architecture uses Redis.",
+            "memory_enabled": True,
+        },
+    )
+    second = client.post(
+        "/chat",
+        json={
+            "session_id": "diff-demo",
+            "user_id": "demo-user",
+            "message": "The architecture also uses FastAPI.",
+            "memory_enabled": True,
+        },
+    )
+    third = client.post(
+        "/chat",
+        json={
+            "session_id": "diff-demo",
+            "user_id": "demo-user",
+            "message": "What architecture did we decide?",
+            "memory_enabled": True,
+        },
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert third.status_code == 200
+
+    diff_response = client.get("/sessions/diff-demo/context-diff/3")
+    assert diff_response.status_code == 200
+
+    body = diff_response.json()
+    assert body["turn"] == 3
+    assert any(item["value"] == "technology = FastAPI" for item in body["diff"]["added"])
+    assert any(item["type"] == "fact" for item in body["diff"]["unchanged"])

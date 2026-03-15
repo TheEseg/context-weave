@@ -1,5 +1,5 @@
-import type { ChatResponse, HealthResponse, SessionContext } from "../types";
-import { mockGetSessionContext, mockHealth, mockSendChatMessage } from "../demo/mockData";
+import type { ChatResponse, ContextDiffResponse, HealthResponse, SessionContext } from "../types";
+import { mockGetContextDiff, mockGetSessionContext, mockHealth, mockSendChatMessage } from "../demo/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 const DEMO_MODE = String(import.meta.env.VITE_DEMO_MODE || "false").toLowerCase() === "true";
@@ -56,6 +56,13 @@ export function getSessionContext(sessionId: string): Promise<SessionContext> {
     return mockGetSessionContext(sessionId);
   }
   return request<SessionContext>(`/sessions/${encodeURIComponent(sessionId)}/context`);
+}
+
+export function getContextDiff(sessionId: string, turn: number): Promise<ContextDiffResponse> {
+  if (DEMO_MODE) {
+    return mockGetContextDiff(sessionId, turn);
+  }
+  return request<ContextDiffResponse>(`/sessions/${encodeURIComponent(sessionId)}/context-diff/${turn}`);
 }
 
 export { API_BASE_URL, DEMO_MODE };

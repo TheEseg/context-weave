@@ -1,4 +1,4 @@
-import type { ChatResponse, HealthResponse, SessionContext } from "../types";
+import type { ChatResponse, ContextDiffResponse, HealthResponse, SessionContext } from "../types";
 
 type SendChatPayload = {
   session_id: string;
@@ -7,43 +7,32 @@ type SendChatPayload = {
   memory_enabled: boolean;
 };
 
+type Snapshot = {
+  turn: number;
+  packed_context: string;
+  facts: SessionContext["facts"];
+  recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
+  retrieved_chunks: SessionContext["chunks"];
+};
+
 const sessions = new Map<string, SessionContext>();
+const snapshots = new Map<string, Snapshot[]>();
 
 function createSeededSession(): SessionContext {
   return {
     session_id: "demo-session",
     user_id: "demo-user",
     messages: [
-      {
-        role: "user",
-        content: "The API layer uses FastAPI.",
-      },
-      {
-        role: "assistant",
-        content: "Captured FastAPI as the API layer for ContextWeave.",
-      },
-      {
-        role: "user",
-        content: "The project uses Redis and PostgreSQL for memory and persistence.",
-      },
+      { role: "user", content: "The API layer uses FastAPI." },
+      { role: "assistant", content: "Captured FastAPI as the API layer for ContextWeave." },
+      { role: "user", content: "The project uses Redis and PostgreSQL for memory and persistence." },
+      { role: "assistant", content: "Stored Redis and PostgreSQL as durable architecture facts for this session." },
+      { role: "user", content: "The frontend is deployed on GitHub Pages and the backend on Railway." },
       {
         role: "assistant",
-        content:
-          "Stored Redis and PostgreSQL as durable architecture facts for this session.",
+        content: "Captured the deployment split: GitHub Pages for the frontend demo and Railway for the backend service.",
       },
-      {
-        role: "user",
-        content: "The frontend is deployed on GitHub Pages and the backend on Railway.",
-      },
-      {
-        role: "assistant",
-        content:
-          "Captured the deployment split: GitHub Pages for the frontend demo and Railway for the backend service.",
-      },
-      {
-        role: "user",
-        content: "What architecture did we decide for ContextWeave?",
-      },
+      { role: "user", content: "What architecture did we decide for ContextWeave?" },
       {
         role: "assistant",
         content:
@@ -51,40 +40,14 @@ function createSeededSession(): SessionContext {
       },
     ],
     recent_messages: [
-      {
-        role: "user",
-        content: "The API layer uses FastAPI.",
-      },
-      {
-        role: "assistant",
-        content: "Captured FastAPI as the API layer for ContextWeave.",
-      },
-      {
-        role: "user",
-        content: "The project uses Redis and PostgreSQL for memory and persistence.",
-      },
+      { role: "user", content: "The API layer uses FastAPI." },
+      { role: "assistant", content: "Captured FastAPI as the API layer for ContextWeave." },
+      { role: "user", content: "The project uses Redis and PostgreSQL for memory and persistence." },
+      { role: "assistant", content: "Stored Redis and PostgreSQL as durable architecture facts for this session." },
+      { role: "user", content: "The frontend is deployed on GitHub Pages and the backend on Railway." },
       {
         role: "assistant",
-        content:
-          "Stored Redis and PostgreSQL as durable architecture facts for this session.",
-      },
-      {
-        role: "user",
-        content: "The frontend is deployed on GitHub Pages and the backend on Railway.",
-      },
-      {
-        role: "assistant",
-        content:
-          "Captured the deployment split: GitHub Pages for the frontend demo and Railway for the backend service.",
-      },
-      {
-        role: "user",
-        content: "What architecture did we decide for ContextWeave?",
-      },
-      {
-        role: "assistant",
-        content:
-          "For ContextWeave we settled on Redis and PostgreSQL behind the backend, with the frontend served from GitHub Pages and the API running on Railway.",
+        content: "Captured the deployment split: GitHub Pages for the frontend demo and Railway for the backend service.",
       },
     ],
     summary:
@@ -100,31 +63,28 @@ function createSeededSession(): SessionContext {
       {
         document_title: "Deployment Notes",
         chunk_index: 0,
-        content:
-          "The public demo serves the frontend from GitHub Pages while the backend runs separately on Railway.",
+        content: "The public demo serves the frontend from GitHub Pages while the backend runs separately on Railway.",
       },
       {
         document_title: "Architecture Principles",
         chunk_index: 0,
-        content:
-          "ContextWeave separates working memory from durable memory so the system can rebuild context after long gaps.",
+        content: "ContextWeave separates working memory from durable memory so the system can rebuild context after long gaps.",
       },
       {
         document_title: "API Layer",
         chunk_index: 0,
-        content:
-          "FastAPI exposes the chat and health endpoints while the context builder assembles summary, facts, retrieval results, and recent messages.",
+        content: "FastAPI exposes the chat and health endpoints while the context builder assembles summary, facts, retrieval results, and recent messages.",
       },
       {
         document_title: "Storage Stack",
         chunk_index: 0,
-        content:
-          "Redis supports short-term working memory while PostgreSQL stores sessions, messages, facts, documents, and chunks.",
+        content: "Redis supports short-term working memory while PostgreSQL stores sessions, messages, facts, documents, and chunks.",
       },
     ],
     task_state: {
       last_user_message: "What architecture did we decide for ContextWeave?",
     },
+    latest_turn: 3,
   };
 }
 
@@ -138,6 +98,7 @@ function createEmptySession(sessionId: string, userId: string): SessionContext {
     facts: [],
     chunks: [],
     task_state: {},
+    latest_turn: 0,
   };
 }
 
@@ -149,6 +110,7 @@ function ensureSession(sessionId: string, userId: string): SessionContext {
 
   const created = sessionId === "demo-session" ? createSeededSession() : createEmptySession(sessionId, userId);
   sessions.set(sessionId, created);
+  ensureSnapshots(created);
   return created;
 }
 
@@ -188,9 +150,7 @@ function extractFacts(message: string): SessionContext["facts"] {
 
 function buildAssistantResponse(session: SessionContext, message: string, memoryEnabled: boolean): string {
   const lower = message.toLowerCase();
-  const technologies = session.facts
-    .filter((fact) => fact.fact_key === "technology")
-    .map((fact) => fact.fact_value);
+  const technologies = session.facts.filter((fact) => fact.fact_key === "technology").map((fact) => fact.fact_value);
   const frontendHosting = session.facts.find((fact) => fact.fact_key === "frontend_hosting")?.fact_value;
   const backendHosting = session.facts.find((fact) => fact.fact_key === "backend_hosting")?.fact_value;
 
@@ -214,8 +174,7 @@ function buildAssistantResponse(session: SessionContext, message: string, memory
         frontendHosting || backendHosting
           ? ` The demo delivery split is ${frontendHosting ?? "the frontend"} for the frontend and ${backendHosting ?? "the backend"} for the backend.`
           : "";
-      const chunkSupport =
-        session.chunks.length > 0 ? ` Retrieved context also points to: ${session.chunks[0].content}` : "";
+      const chunkSupport = session.chunks.length > 0 ? ` Retrieved context also points to: ${session.chunks[0].content}` : "";
       return `${stackPart}${hostingPart}${chunkSupport}`.trim();
     }
   }
@@ -240,24 +199,142 @@ function buildPackedContext(session: SessionContext, message: string, memoryEnab
     parts.push(`Session summary:\n${session.summary}`);
   }
   if (session.facts.length > 0) {
-    parts.push(
-      `Retrieved facts:\n${session.facts.map((fact) => `- ${fact.fact_key}: ${fact.fact_value}`).join("\n")}`,
-    );
+    parts.push(`Retrieved facts:\n${session.facts.map((fact) => `- ${fact.fact_key}: ${fact.fact_value}`).join("\n")}`);
   }
   if (session.chunks.length > 0) {
     parts.push(
-      `Retrieved chunks:\n${session.chunks
-        .map((chunk) => `[${chunk.document_title}#${chunk.chunk_index}] ${chunk.content}`)
-        .join("\n\n")}`,
+      `Retrieved chunks:\n${session.chunks.map((chunk) => `[${chunk.document_title}#${chunk.chunk_index}] ${chunk.content}`).join("\n\n")}`,
     );
   }
   if (session.recent_messages.length > 0) {
-    parts.push(
-      `Recent messages:\n${session.recent_messages.map((item) => `- ${item.role}: ${item.content}`).join("\n")}`,
-    );
+    parts.push(`Recent messages:\n${session.recent_messages.map((item) => `- ${item.role}: ${item.content}`).join("\n")}`);
   }
   parts.push(`Current user message:\n${message}`);
   return parts.join("\n\n");
+}
+
+function buildSnapshot(
+  turn: number,
+  session: SessionContext,
+  message: string,
+  memoryEnabled: boolean,
+): Snapshot {
+  return {
+    turn,
+    packed_context: buildPackedContext(session, message, memoryEnabled),
+    facts: memoryEnabled ? structuredClone(session.facts) : [],
+    recent_messages: memoryEnabled ? structuredClone(session.recent_messages) : [],
+    retrieved_chunks: memoryEnabled ? structuredClone(session.chunks) : [],
+  };
+}
+
+function ensureSnapshots(session: SessionContext): Snapshot[] {
+  const existing = snapshots.get(session.session_id);
+  if (existing) {
+    return existing;
+  }
+
+  if (session.session_id !== "demo-session") {
+    snapshots.set(session.session_id, []);
+    return [];
+  }
+
+  const demoSnapshots: Snapshot[] = [
+    {
+      turn: 1,
+      packed_context:
+        "Retrieved facts:\n- technology: FastAPI\n- technology: Redis\n- technology: PostgreSQL\n\nRecent messages:\n- user: The API layer uses FastAPI.\n- assistant: Captured FastAPI as the API layer for ContextWeave.\n\nCurrent user message:\nThe project uses Redis and PostgreSQL for memory and persistence.",
+      facts: [
+        { fact_key: "technology", fact_value: "FastAPI" },
+        { fact_key: "technology", fact_value: "Redis" },
+        { fact_key: "technology", fact_value: "PostgreSQL" },
+      ],
+      recent_messages: [
+        { role: "user", content: "The API layer uses FastAPI." },
+        { role: "assistant", content: "Captured FastAPI as the API layer for ContextWeave." },
+      ],
+      retrieved_chunks: [
+        {
+          document_title: "API Layer",
+          chunk_index: 0,
+          content: "FastAPI exposes the chat and health endpoints while the context builder assembles summary, facts, retrieval results, and recent messages.",
+        },
+      ],
+    },
+    {
+      turn: 2,
+      packed_context:
+        "Session summary:\nSession summary: FastAPI is the API layer. Redis and PostgreSQL were selected for memory and persistence.\n\nRetrieved facts:\n- technology: FastAPI\n- technology: Redis\n- technology: PostgreSQL\n- frontend_hosting: GitHub Pages\n- backend_hosting: Railway\n\nCurrent user message:\nThe frontend is deployed on GitHub Pages and the backend on Railway.",
+      facts: [
+        { fact_key: "technology", fact_value: "FastAPI" },
+        { fact_key: "technology", fact_value: "Redis" },
+        { fact_key: "technology", fact_value: "PostgreSQL" },
+        { fact_key: "frontend_hosting", fact_value: "GitHub Pages" },
+        { fact_key: "backend_hosting", fact_value: "Railway" },
+      ],
+      recent_messages: [
+        { role: "user", content: "The API layer uses FastAPI." },
+        { role: "assistant", content: "Captured FastAPI as the API layer for ContextWeave." },
+        { role: "user", content: "The project uses Redis and PostgreSQL for memory and persistence." },
+        { role: "assistant", content: "Stored Redis and PostgreSQL as durable architecture facts for this session." },
+      ],
+      retrieved_chunks: [
+        {
+          document_title: "Deployment Notes",
+          chunk_index: 0,
+          content: "The public demo serves the frontend from GitHub Pages while the backend runs separately on Railway.",
+        },
+      ],
+    },
+    {
+      turn: 3,
+      packed_context:
+        "Session summary:\nSession summary: FastAPI is the API layer. Redis and PostgreSQL were selected for memory and persistence. The frontend is deployed on GitHub Pages, and the backend runs on Railway.\n\nRetrieved facts:\n- technology: FastAPI\n- technology: Redis\n- technology: PostgreSQL\n- frontend_hosting: GitHub Pages\n- backend_hosting: Railway\n\nRetrieved chunks:\n[Deployment Notes#0] The public demo serves the frontend from GitHub Pages while the backend runs separately on Railway.\n\nCurrent user message:\nWhat architecture did we decide for ContextWeave?",
+      facts: structuredClone(session.facts),
+      recent_messages: structuredClone(session.recent_messages),
+      retrieved_chunks: structuredClone(session.chunks),
+    },
+  ];
+
+  snapshots.set(session.session_id, demoSnapshots);
+  return demoSnapshots;
+}
+
+function diffSnapshots(previous: Snapshot | undefined, current: Snapshot): ContextDiffResponse["diff"] {
+  const previousEntries = new Map((previous ? flattenSnapshot(previous) : []).map((item) => [`${item.type}:${item.value}`, item]));
+  const currentEntries = new Map(flattenSnapshot(current).map((item) => [`${item.type}:${item.value}`, item]));
+
+  const added = [...currentEntries.entries()]
+    .filter(([key]) => !previousEntries.has(key))
+    .map(([, value]) => value);
+  const removed = [...previousEntries.entries()]
+    .filter(([key]) => !currentEntries.has(key))
+    .map(([, value]) => value);
+  const unchanged = [...currentEntries.entries()]
+    .filter(([key]) => previousEntries.has(key))
+    .map(([, value]) => value);
+
+  return {
+    added: added.sort(sortDiffItems),
+    removed: removed.sort(sortDiffItems),
+    unchanged: unchanged.sort(sortDiffItems),
+  };
+}
+
+function flattenSnapshot(snapshot: Snapshot) {
+  return [
+    { type: "packed_context", value: snapshot.packed_context },
+    ...snapshot.facts.map((fact) => ({ type: "fact", value: `${fact.fact_key} = ${fact.fact_value}` })),
+    ...snapshot.recent_messages.map((message) => ({ type: "recent_message", value: `${message.role}: ${message.content}` })),
+    ...snapshot.retrieved_chunks.map((chunk) => ({
+      type: "retrieval_chunk",
+      value: `${chunk.document_title}#${chunk.chunk_index}: ${chunk.content}`,
+    })),
+  ];
+}
+
+function sortDiffItems(a: { type: string; value: string }, b: { type: string; value: string }) {
+  return a.type === b.type ? a.value.localeCompare(b.value) : a.type.localeCompare(b.type);
 }
 
 export async function mockHealth(): Promise<HealthResponse> {
@@ -266,11 +343,27 @@ export async function mockHealth(): Promise<HealthResponse> {
 
 export async function mockGetSessionContext(sessionId: string): Promise<SessionContext> {
   const session = sessions.get(sessionId) ?? ensureSession(sessionId, "demo-user");
+  session.latest_turn = ensureSnapshots(session).length;
   return structuredClone(session);
+}
+
+export async function mockGetContextDiff(sessionId: string, turn: number): Promise<ContextDiffResponse> {
+  const session = sessions.get(sessionId) ?? ensureSession(sessionId, "demo-user");
+  const sessionSnapshots = ensureSnapshots(session);
+  const current = sessionSnapshots.find((snapshot) => snapshot.turn === turn);
+  if (!current) {
+    throw new Error(`Context snapshot for turn ${turn} not found`);
+  }
+
+  return {
+    turn,
+    diff: diffSnapshots(sessionSnapshots.find((snapshot) => snapshot.turn === turn - 1), current),
+  };
 }
 
 export async function mockSendChatMessage(payload: SendChatPayload): Promise<ChatResponse> {
   const session = ensureSession(payload.session_id, payload.user_id);
+  const sessionSnapshots = ensureSnapshots(session);
   const userMessage = { role: "user" as const, content: payload.message };
 
   if (payload.memory_enabled) {
@@ -308,7 +401,12 @@ export async function mockSendChatMessage(payload: SendChatPayload): Promise<Cha
   }
   session.user_id = payload.user_id;
 
+  const nextTurn = sessionSnapshots.length + 1;
+  sessionSnapshots.push(buildSnapshot(nextTurn, session, payload.message, payload.memory_enabled));
+  session.latest_turn = nextTurn;
+
   sessions.set(session.session_id, session);
+  snapshots.set(session.session_id, sessionSnapshots);
 
   return {
     session_id: session.session_id,

@@ -515,7 +515,8 @@ button:disabled {
 
 .fact-list,
 .chunk-list,
-.recent-list {
+.recent-list,
+.diff-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -529,7 +530,8 @@ button:disabled {
 
 .fact-list li,
 .chunk-item,
-.recent-list li {
+.recent-list li,
+.diff-list li {
   border-radius: 14px;
   background: rgba(7, 12, 18, 0.36);
   padding: 12px;
@@ -553,6 +555,44 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.diff-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.diff-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.diff-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diff-group h4 {
+  margin: 0;
+}
+
+.diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diff-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diff-list span {
+  color: var(--muted);
 }
 
 .chunk-meta {
@@ -660,7 +700,8 @@ pre {
   }
 
   .session-controls,
-  .metadata-grid {
+  .metadata-grid,
+  .diff-columns {
     grid-template-columns: 1fr;
   }
 

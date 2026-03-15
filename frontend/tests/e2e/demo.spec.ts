@@ -26,6 +26,7 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("summary-section")).toContainText("FastAPI");
     await expect(page.getByTestId("facts-section")).toContainText("GitHub Pages");
     await expect(page.getByTestId("chunks-section")).toContainText("Railway");
+    await expect(page.getByTestId("context-diff-section")).toContainText("These context elements changed since the previous turn.");
   });
 
   test("sends a new message and keeps the inspector populated", async ({ page }) => {

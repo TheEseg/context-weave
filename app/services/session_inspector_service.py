@@ -6,8 +6,16 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Message, Session as ChatSession
 from app.memory.context_builder import ContextBuilder
+from app.memory.context_diff import ContextSnapshot, diff_snapshots
 from app.memory.redis_store import RedisMemoryStore
-from app.schemas.session import SessionChunk, SessionContextResponse, SessionFact, SessionMessage
+from app.schemas.session import (
+    ContextDiffPayload,
+    ContextDiffResponse,
+    SessionChunk,
+    SessionContextResponse,
+    SessionFact,
+    SessionMessage,
+)
 
 
 class SessionInspectorService:
@@ -42,4 +50,38 @@ class SessionInspectorService:
             facts=[SessionFact(**fact) for fact in context.facts],
             chunks=[SessionChunk(**chunk) for chunk in context.chunks],
             task_state=task_state,
+            latest_turn=self.memory_store.get_latest_turn(session_id),
+        )
+
+    def get_context_diff(self, session_id: str, turn: int) -> ContextDiffResponse:
+        session = self.db.scalar(select(ChatSession).where(ChatSession.id == session_id))
+        if session is None:
+            raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
+        current_snapshot = self.memory_store.get_context_snapshot(session_id, turn)
+        if current_snapshot is None:
+            raise HTTPException(status_code=404, detail=f"Context snapshot for turn {turn} not found")
+
+        previous_snapshot = self.memory_store.get_context_snapshot(session_id, turn - 1) if turn > 1 else None
+        diff = diff_snapshots(
+            self._to_snapshot(previous_snapshot) if previous_snapshot else None,
+            self._to_snapshot(current_snapshot),
+        )
+        return ContextDiffResponse(
+            turn=turn,
+            diff=ContextDiffPayload(
+                added=[{"type": item.type, "value": item.value} for item in diff.added],
+                removed=[{"type": item.type, "value": item.value} for item in diff.removed],
+                unchanged=[{"type": item.type, "value": item.value} for item in diff.unchanged],
+            ),
+        )
+
+    @staticmethod
+    def _to_snapshot(snapshot: dict[str, object]) -> ContextSnapshot:
+        return ContextSnapshot(
+            turn=int(snapshot["turn"]),
+            packed_context=str(snapshot["packed_context"]),
+            facts=list(snapshot["facts"]),
+            recent_messages=list(snapshot["recent_messages"]),
+            retrieved_chunks=list(snapshot["retrieved_chunks"]),
         )

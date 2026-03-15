@@ -53,6 +53,12 @@ ContextWeave reconstructs conversational context before every model call. Instea
 
 The result is a bounded, explainable context pipeline designed to preserve continuity without letting prompts expand indefinitely.
 
+## Context Diff
+
+ContextWeave can also show how the packed prompt context changes between turns. Each chat turn stores a context snapshot, and the Context Inspector can compare the current turn with the previous one to show what was added, removed, or kept unchanged.
+
+This makes it easier to debug context reconstruction and understand why a specific response was produced.
+
 ## Example
 
 1. A user says: "We decided to use FastAPI for the API layer."
@@ -195,6 +201,7 @@ The frontend runs on `http://localhost:5173` and connects to the backend through
 - `GET /health`
 - `POST /chat`
 - `GET /sessions/{session_id}/context`
+- `GET /sessions/{session_id}/context-diff/{turn}`
 
 Example:
 
