@@ -3,6 +3,38 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
+def format_summary_section(summary: str) -> str:
+    return f"Session summary:\n{summary}" if summary else ""
+
+
+def format_facts_section(facts: list[dict[str, str]]) -> str:
+    if not facts:
+        return ""
+    fact_lines = "\n".join(f'- {fact["fact_key"]}: {fact["fact_value"]}' for fact in facts)
+    return f"Retrieved facts:\n{fact_lines}"
+
+
+def format_chunks_section(chunks: list[dict[str, str | int]]) -> str:
+    if not chunks:
+        return ""
+    chunk_lines = "\n\n".join(
+        f'[{chunk["document_title"]}#{chunk["chunk_index"]}] {chunk["content"]}'
+        for chunk in chunks
+    )
+    return f"Retrieved chunks:\n{chunk_lines}"
+
+
+def format_recent_messages_section(recent_messages: list[dict[str, str]]) -> str:
+    if not recent_messages:
+        return ""
+    recent_lines = "\n".join(f'- {message["role"]}: {message["content"]}' for message in recent_messages)
+    return f"Recent messages:\n{recent_lines}"
+
+
+def format_current_message_section(user_message: str) -> str:
+    return f"Current user message:\n{user_message}"
+
+
 @dataclass(slots=True)
 class ContextPack:
     memory_enabled: bool
@@ -14,7 +46,7 @@ class ContextPack:
 
     @classmethod
     def direct_message_only(cls, user_message: str) -> "ContextPack":
-        packed_context = f"Current user message:\n{user_message}"
+        packed_context = format_current_message_section(user_message)
         return cls(
             memory_enabled=False,
             recent_messages=[],
@@ -43,22 +75,13 @@ def pack_context(
     if not memory_enabled:
         return ContextPack.direct_message_only(user_message)
 
-    parts: list[str] = []
-    if summary:
-        parts.append(f"Session summary:\n{summary}")
-    if facts:
-        fact_lines = "\n".join(f'- {fact["fact_key"]}: {fact["fact_value"]}' for fact in facts)
-        parts.append(f"Retrieved facts:\n{fact_lines}")
-    if chunks:
-        chunk_lines = "\n\n".join(
-            f'[{chunk["document_title"]}#{chunk["chunk_index"]}] {chunk["content"]}'
-            for chunk in chunks
-        )
-        parts.append(f"Retrieved chunks:\n{chunk_lines}")
-    if recent_messages:
-        recent_lines = "\n".join(f'- {message["role"]}: {message["content"]}' for message in recent_messages)
-        parts.append(f"Recent messages:\n{recent_lines}")
-    parts.append(f"Current user message:\n{user_message}")
+    parts = [
+        format_summary_section(summary),
+        format_facts_section(facts),
+        format_chunks_section(chunks),
+        format_recent_messages_section(recent_messages),
+        format_current_message_section(user_message),
+    ]
 
     return ContextPack(
         memory_enabled=True,
@@ -66,5 +89,5 @@ def pack_context(
         summary=summary,
         facts=facts,
         chunks=chunks,
-        packed_context="\n\n".join(parts),
+        packed_context="\n\n".join(part for part in parts if part),
     )

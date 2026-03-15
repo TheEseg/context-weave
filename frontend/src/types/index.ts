@@ -28,6 +28,21 @@ export type ContextDebug = {
   retrieved_chunks: SessionChunk[];
   final_packed_context: string;
   context_length_chars: number;
+  context_budget: ContextBudget;
+};
+
+export type ContextBudget = {
+  unit: "chars" | "tokens" | string;
+  system_prompt: number;
+  session_summary: number;
+  facts: number;
+  retrieved_chunks: number;
+  recent_messages: number;
+  final_packed_context_total: number;
+  model_limit: number;
+  usage_ratio: number;
+  warning?: string | null;
+  truncated?: boolean;
 };
 
 export type ContextDiffItem = {

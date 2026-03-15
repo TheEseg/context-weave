@@ -1,4 +1,4 @@
-import type { ChatResponse, ContextDiffResponse, HealthResponse, SessionContext } from "../types";
+import type { ChatResponse, ContextBudget, ContextDiffResponse, HealthResponse, SessionContext } from "../types";
 
 type SendChatPayload = {
   session_id: string;
@@ -14,6 +14,8 @@ type Snapshot = {
   recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
   retrieved_chunks: SessionContext["chunks"];
 };
+
+const DEMO_MODEL_LIMIT = 1200;
 
 const sessions = new Map<string, SessionContext>();
 const snapshots = new Map<string, Snapshot[]>();
@@ -211,6 +213,43 @@ function buildPackedContext(session: SessionContext, message: string, memoryEnab
   }
   parts.push(`Current user message:\n${message}`);
   return parts.join("\n\n");
+}
+
+function buildContextBudget(packedContext: string, session: SessionContext, memoryEnabled: boolean): ContextBudget {
+  const summaryText = memoryEnabled && session.summary ? `Session summary:\n${session.summary}` : "";
+  const factsText =
+    memoryEnabled && session.facts.length > 0
+      ? `Retrieved facts:\n${session.facts.map((fact) => `- ${fact.fact_key}: ${fact.fact_value}`).join("\n")}`
+      : "";
+  const chunksText =
+    memoryEnabled && session.chunks.length > 0
+      ? `Retrieved chunks:\n${session.chunks.map((chunk) => `[${chunk.document_title}#${chunk.chunk_index}] ${chunk.content}`).join("\n\n")}`
+      : "";
+  const recentMessagesText =
+    memoryEnabled && session.recent_messages.length > 0
+      ? `Recent messages:\n${session.recent_messages.map((item) => `- ${item.role}: ${item.content}`).join("\n")}`
+      : "";
+  const usageRatio = packedContext.length / DEMO_MODEL_LIMIT;
+  let warning: string | null = null;
+  if (usageRatio >= 1) {
+    warning = "Prompt budget exceeded the configured model limit.";
+  } else if (usageRatio >= 0.8) {
+    warning = "Prompt budget is approaching the configured model limit.";
+  }
+
+  return {
+    unit: "chars",
+    system_prompt: 0,
+    session_summary: summaryText.length,
+    facts: factsText.length,
+    retrieved_chunks: chunksText.length,
+    recent_messages: recentMessagesText.length,
+    final_packed_context_total: packedContext.length,
+    model_limit: DEMO_MODEL_LIMIT,
+    usage_ratio: Number(usageRatio.toFixed(4)),
+    warning,
+    truncated: false,
+  };
 }
 
 function buildSnapshot(
@@ -420,6 +459,7 @@ export async function mockSendChatMessage(payload: SendChatPayload): Promise<Cha
       retrieved_chunks: payload.memory_enabled ? session.chunks : [],
       final_packed_context: packedContext,
       context_length_chars: packedContext.length,
+      context_budget: buildContextBudget(packedContext, session, payload.memory_enabled),
     },
   };
 }

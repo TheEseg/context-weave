@@ -59,6 +59,10 @@ ContextWeave can also show how the packed prompt context changes between turns. 
 
 This makes it easier to debug context reconstruction and understand why a specific response was produced.
 
+## Context Budget Visualizer
+
+ContextWeave can show how the prompt budget is consumed across context layers. The Context Inspector breaks down the packed prompt by summary, facts, retrieved chunks, and recent messages so developers can see prompt composition, memory tradeoffs, and context growth over time.
+
 ## Example
 
 1. A user says: "We decided to use FastAPI for the API layer."
@@ -115,6 +119,7 @@ More detail:
 - public frontend demo with chat panel and Context Inspector
 - tabbed inspector workspace and context timeline for turn-by-turn debugging
 - Context Debugger for the final packed context sent to the provider
+- Context Budget Visualizer for per-layer prompt usage and limit warnings
 - Memory ON/OFF comparison mode
 - Redis short-term memory for recent turns, summaries, and task state
 - PostgreSQL-backed persistent facts, messages, documents, and chunks

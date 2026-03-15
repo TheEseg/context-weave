@@ -19,6 +19,7 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("load-demo-session")).toBeVisible();
     await expect(page.getByTestId("open-session")).toBeVisible();
     await expect(page.getByTestId("reset-session")).toBeVisible();
+    await expect(page.getByTestId("inspector-tab-budget")).toBeVisible();
   });
 
   test("loads the demo session with populated context", async ({ page }) => {
@@ -48,6 +49,10 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("inspector-tab-memory")).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("facts-section")).toContainText("FastAPI");
     await expect(page.getByTestId("summary-section")).not.toBeEmpty();
+    await page.getByTestId("inspector-tab-budget").click();
+    await expect(page.getByTestId("context-budget-section")).toContainText("Context budget");
+    await expect(page.getByTestId("context-budget-section")).toContainText("Total");
+    await expect(page.locator(".budget-bar-fill")).toHaveCount(5);
   });
 
   test("keeps chat working when memory is turned off", async ({ page }) => {
@@ -62,6 +67,21 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("facts-section")).toContainText("Persistent facts were not pulled");
     await page.getByTestId("inspector-tab-prompt").click();
     await expect(page.getByTestId("packed-context-section")).toContainText("Current user message:");
+    await page.getByTestId("inspector-tab-budget").click();
+    await expect(page.getByTestId("context-budget-section")).toContainText("Total");
+  });
+
+  test("renders budget warning when the packed context grows", async ({ page }) => {
+    await page.getByTestId("load-demo-session").click();
+    await page.getByTestId("message-input").fill(
+      "Please summarize again that ContextWeave uses FastAPI, Redis, PostgreSQL, GitHub Pages, and Railway so the packed context gets larger. ".repeat(
+        8,
+      ),
+    );
+    await page.getByTestId("send-message").click();
+
+    await page.getByTestId("inspector-tab-budget").click();
+    await expect(page.getByTestId("context-budget-section")).toContainText(/Heads up|Limit exceeded/);
   });
 });
 
@@ -101,6 +121,8 @@ test.describe("ContextWeave demo mobile", () => {
     await expect(page.getByTestId("summary-section")).toBeVisible();
     await expect(page.getByTestId("facts-section")).toBeVisible();
     await expect(page.getByTestId("chunks-section")).toBeVisible();
+    await page.getByTestId("inspector-tab-budget").click();
+    await expect(page.getByTestId("context-budget-section")).toBeVisible();
     await page.getByTestId("inspector-tab-prompt").click();
     await expect(page.getByTestId("packed-context-section")).toBeVisible();
 

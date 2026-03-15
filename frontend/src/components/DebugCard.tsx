@@ -28,6 +28,7 @@ export function DebugCard({
     { label: "Retrieval signal", value: `${debug?.retrieved_chunks.length ?? 0} chunks` },
     { label: "Recent-turn signal", value: `${recentMessages.length} messages` },
     { label: "Packed size", value: `${debug?.context_length_chars ?? 0} chars` },
+    { label: "Budget usage", value: debug?.context_budget ? `${Math.round(debug.context_budget.usage_ratio * 100)}%` : "n/a" },
     { label: "Latest turn", value: String(latestTurn ?? 0) },
   ];
 

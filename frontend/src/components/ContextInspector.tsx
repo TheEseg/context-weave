@@ -2,13 +2,14 @@ import { useState } from "react";
 
 import type { ContextDebug, ContextDiffResponse, SessionContext } from "../types";
 import { ChunksCard } from "./ChunksCard";
+import { ContextBudgetCard } from "./ContextBudgetCard";
 import { ContextDiffCard } from "./ContextDiffCard";
 import { DebugCard } from "./DebugCard";
 import { FactsCard } from "./FactsCard";
 import { PackedContextCard } from "./PackedContextCard";
 import { SummaryCard } from "./SummaryCard";
 
-type InspectorTab = "memory" | "prompt" | "diff" | "debug";
+type InspectorTab = "memory" | "prompt" | "budget" | "diff" | "debug";
 
 type ContextInspectorProps = {
   context: SessionContext | null;
@@ -37,6 +38,7 @@ export function ContextInspector({
   const recentMessages = debug?.recent_messages ?? context?.recent_messages ?? [];
   const packedContext = debug?.final_packed_context ?? "";
   const contextLengthChars = debug?.context_length_chars;
+  const contextBudget = debug?.context_budget ?? null;
   const totalMessages = context?.messages.length ?? 0;
   const sessionId = context?.session_id ?? "pending";
   const userId = context?.user_id ?? "pending";
@@ -46,6 +48,7 @@ export function ContextInspector({
   const tabs: Array<{ id: InspectorTab; label: string }> = [
     { id: "memory", label: "Memory" },
     { id: "prompt", label: "Prompt" },
+    { id: "budget", label: "Budget" },
     { id: "diff", label: "Diff" },
     { id: "debug", label: "Debug" },
   ];
@@ -137,6 +140,12 @@ export function ContextInspector({
                 contextLengthChars={contextLengthChars}
                 memoryEnabled={resolvedMemoryEnabled}
               />
+            </div>
+          ) : null}
+
+          {activeTab === "budget" ? (
+            <div className="tab-panel-grid" data-testid="inspector-panel-budget">
+              <ContextBudgetCard budget={contextBudget} />
             </div>
           ) : null}
 

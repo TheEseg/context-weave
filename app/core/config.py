@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     recent_message_limit: int = 6
     retrieval_limit: int = 3
     summary_char_limit: int = 400
+    model_context_limit: int = 4096
 
     model_config = SettingsConfigDict(
         extra="ignore",
