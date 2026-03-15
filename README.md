@@ -10,20 +10,25 @@
   <a href="https://github.com/theeseg/context-weave/actions/workflows/ci.yml">
     <img src="https://github.com/theeseg/context-weave/actions/workflows/ci.yml/badge.svg" alt="CI status" />
   </a>
+  <img src="https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=061a23" alt="React" />
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-0b1220" alt="MIT license" />
+  </a>
+  <a href="https://github.com/theeseg/context-weave/stargazers">
+    <img src="https://img.shields.io/github/stars/theeseg/context-weave?style=flat" alt="GitHub stars" />
+  </a>
 </p>
 
-ContextWeave is a pragmatic layered memory architecture for AI applications. It combines short-term memory, persistent facts, retrieval, and context packing to preserve continuity across long and multi-session conversations without depending only on the prompt window.
+ContextWeave is an open-source memory and context infrastructure project for AI applications. It reconstructs conversational context from working memory, persistent facts, retrieval results, and summaries before every model call, so continuity survives long and multi-session conversations without letting prompts grow indefinitely.
 
 ## Live Demo
 
-Try the public demo here:
+- Frontend demo: **[ContextWeave Demo](https://theeseg.github.io/context-weave/)**
+- Backend API docs: available on any running backend at `/docs`, or locally at [http://localhost:8000/docs](http://localhost:8000/docs)
 
-**[ContextWeave Demo](https://theeseg.github.io/context-weave/)**
-
-GitHub Pages hosts only the static frontend. The backend remains separate and is configured through `VITE_API_BASE_URL`.
-The current public setup serves the frontend from GitHub Pages and the backend from Railway.
-
-If no public backend is available, the Pages build can run with `VITE_DEMO_MODE=true`, which enables a browser-only fallback flow that still demonstrates conversation continuity, summary updates, extracted facts, and retrieved chunks.
+GitHub Pages hosts the static frontend. The backend can run separately and is configured through `VITE_API_BASE_URL`. If no public backend is available, the frontend can still run in browser-only fallback mode with `VITE_DEMO_MODE=true`.
 
 ## Demo Preview
 
@@ -31,48 +36,63 @@ If no public backend is available, the Pages build can run with `VITE_DEMO_MODE=
   <img src="assets/screenshots/contextweave-hero.png" alt="ContextWeave demo overview" width="1100" />
 </p>
 
+<p align="center"><em>ContextWeave demo interface with Context Inspector</em></p>
+
 ## Why This Project Exists
 
-Many AI applications still treat context as whatever fits inside the current prompt. That works for short demos, but it breaks down when conversations span multiple topics, sessions, or time horizons. ContextWeave exists to show a practical alternative: keep working memory explicit, make durable memory inspectable, and build each response from a grounded context pack.
+Many AI applications still treat context as whatever fits inside the current prompt. That is acceptable for short demos, but it breaks when conversations span multiple topics, sessions, or time horizons. ContextWeave shows a pragmatic alternative: keep short-term memory explicit, make durable memory inspectable, and rebuild the right context for every turn.
 
-## Problem
+## How ContextWeave Works
 
-Prompt windows alone are not enough for durable conversational continuity. Real applications need:
+ContextWeave reconstructs conversational context before every model call. Instead of sending only the latest message, it composes a structured context pack from multiple layers:
 
-- recent working memory for active turns
-- durable message and fact storage
-- retrieval over reference documents
-- a deterministic way to pack the right context for each response
+- recent conversation turns from working memory
+- persistent facts stored across turns
+- retrieved reference context
+- a compact conversation summary
 
-## Solution
+The result is a bounded, explainable context pipeline designed to preserve continuity without letting prompts expand indefinitely.
 
-ContextWeave uses:
+## Example
 
-- Redis for recent messages, summaries, and task state
-- PostgreSQL for sessions, messages, facts, documents, and chunks
-- a retrieval abstraction that is ready for stronger semantic search later
-- a context builder that assembles grounded memory before response generation
-- a mock LLM provider for local demos and an optional OpenAI-backed provider
+1. A user says: "We decided to use FastAPI for the API layer."
+2. Several turns later, the user asks: "What framework did we choose?"
+3. ContextWeave rebuilds context from recent turns, stored facts, and summary state.
+4. The assistant can answer consistently because the framework choice remains available even when the earlier message is no longer in the prompt window.
 
 ## Architecture
 
 ```mermaid
-flowchart TD
+flowchart LR
     A["Frontend Demo<br/>GitHub Pages"] --> B["FastAPI API"]
     B --> C["Context Builder"]
     C --> D["Redis<br/>Short-term memory"]
-    C --> E["PostgreSQL<br/>Sessions and persistent facts"]
+    C --> E["PostgreSQL<br/>Sessions, messages, facts"]
     C --> F["Retrieval layer"]
-    C --> G["Context packing"]
+    C --> G["Packed context"]
     G --> H["LLM provider<br/>Mock or OpenAI"]
-    H --> B
 ```
 
 ## Architecture Overview
 
-`POST /chat` validates the request, loads or creates the session, builds a context pack from Redis and PostgreSQL, generates a grounded response, persists both messages, refreshes short-term memory, updates the summary, and stores newly extracted facts.
+### Backend
 
-The browser demo adds a lightweight frontend layer on top of that flow. A chat panel drives the conversation, while a context inspector shows the summary, extracted facts, retrieved chunks, the final packed context, and runtime metadata that make each response context-aware. The UI also supports a Memory ON/OFF comparison mode so the difference between direct prompting and layered memory stays visible.
+- `POST /chat` loads or creates the session, reconstructs context, generates a response, persists messages, updates memory, and stores newly extracted facts
+- Redis holds recent messages, summaries, and task state for short-term continuity
+- PostgreSQL stores sessions, messages, persistent facts, documents, and chunks
+- the retrieval abstraction keeps the MVP simple while leaving a clean path toward stronger semantic ranking
+
+### Frontend
+
+- the React + Vite demo keeps the chat experience readable while exposing the memory system through the Context Inspector
+- the Context Inspector shows summary, facts, chunks, debug metadata, and the final packed context sent to the provider
+- Memory ON/OFF mode makes the value of layered context visible during the same session
+
+### Deployment
+
+- GitHub Pages hosts the public frontend demo
+- Railway hosts the backend API
+- Docker Compose supports local PostgreSQL and Redis for development
 
 More detail:
 
@@ -82,32 +102,54 @@ More detail:
 - [`docs/frontend.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/frontend.md)
 - [`docs/frontend-demo.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/frontend-demo.md)
 
-## MVP Scope
+## Features
 
-- FastAPI app with `GET /health` and `POST /chat`
-- React + Vite frontend demo with a context inspector
-- Context Debugger view for the final packed context sent to the provider
-- Memory ON/OFF comparison mode in the demo UI
-- PostgreSQL persistence for sessions, messages, facts, documents, and chunks
-- Redis working memory
-- sample document ingestion from [`examples/sample_documents`](/Users/ivanesegovic/Documents/Codex/context-weave/examples/sample_documents)
-- retrieval abstraction with simple keyword ranking
-- deterministic summarization and heuristic fact extraction
-- tests for unit, integration, and continuity scenarios
-- Docker Compose for local startup
+- public frontend demo with chat panel and Context Inspector
+- Context Debugger for the final packed context sent to the provider
+- Memory ON/OFF comparison mode
+- Redis short-term memory for recent turns, summaries, and task state
+- PostgreSQL-backed persistent facts, messages, documents, and chunks
+- retrieval abstraction ready for stronger semantic search later
+- heuristic fact extraction and deterministic summarization
+- backend tests, Playwright tests, and GitHub Actions CI
+- Docker Compose local setup for quick development
 
 ## Tech Stack
 
+### Backend
+
 - Python 3.12
 - FastAPI
-- Redis
-- PostgreSQL
-- pgvector-ready schema
 - SQLAlchemy
 - Alembic
 - Pydantic
-- Docker Compose
 - pytest
+
+### Frontend
+
+- React
+- Vite
+- TypeScript
+- Playwright
+
+### Infrastructure
+
+- PostgreSQL
+- Redis
+- pgvector-ready schema
+- Docker Compose
+- GitHub Pages
+- Railway
+
+## When to Use ContextWeave
+
+ContextWeave is useful for applications where conversational state needs to survive beyond a single prompt window:
+
+- AI copilots
+- chat assistants
+- multi-step AI workflows
+- agent systems
+- applications that need durable context continuity across turns or sessions
 
 ## Quick Start
 
@@ -146,10 +188,7 @@ make frontend-install
 make frontend-dev
 ```
 
-The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. Set `VITE_DEMO_MODE=true` to force browser-only fallback mode. The context inspector is the key demo feature: it shows the current summary, extracted facts, retrieved chunks, the final packed context, and debug metadata behind the conversation.
-
-For GitHub Pages, the frontend is built with the `/context-weave/` base path and deployed independently from the backend.
-The demo is optimized for both desktop and mobile viewing, with the chat flow prioritized on smaller screens.
+The frontend runs on `http://localhost:5173` and connects to the backend through `VITE_API_BASE_URL`. Set `VITE_DEMO_MODE=true` to force browser-only fallback mode.
 
 ## Main Endpoints
 
@@ -169,11 +208,11 @@ curl -X POST http://localhost:8000/chat \
   }'
 ```
 
-## Testing
+## Testing and CI
 
 ContextWeave is validated through backend tests, Playwright end-to-end tests for the demo UI, and GitHub Actions CI on pushes to `main` and on pull requests.
 
-Local Python 3.12:
+Backend:
 
 ```bash
 make test
@@ -185,25 +224,27 @@ Docker:
 make test-docker
 ```
 
-Frontend build check:
+Frontend build and E2E:
 
 ```bash
 make frontend-build
+cd frontend && npm run test:e2e
 ```
-
-GitHub Pages deploy:
-
-- push to `main`
-- the workflow in [`.github/workflows/deploy-pages.yml`](/Users/ivanesegovic/Documents/Codex/context-weave/.github/workflows/deploy-pages.yml) builds `frontend/` and publishes `frontend/dist`
-- configure repository variables `VITE_API_BASE_URL` and `VITE_DEMO_MODE` if you want to point the public demo at a live backend or force mock mode
 
 ## Roadmap
 
-- Phase 1: MVP foundations
-- Phase 2: stronger retrieval, background workers, ingestion APIs, CI/CD, and evaluation
-- Phase 3: service decomposition, Kafka-backed events, multi-tenant support, and observability
+Near-term work is focused on making the memory engine more transparent and more useful in real AI applications:
+
+- context scoring and better memory selection
+- improved fact extraction and persistence quality
+- context timeline and replay tooling
+- broader provider integrations
 
 See [`docs/roadmap.md`](/Users/ivanesegovic/Documents/Codex/context-weave/docs/roadmap.md).
+
+## Contributing
+
+Contributions are welcome. Small focused pull requests, bug reports, demo polish, and architecture discussions are all useful. If you plan a larger change, opening an issue first is the easiest way for us to align on scope.
 
 ## Positioning
 
