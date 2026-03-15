@@ -1,4 +1,4 @@
-from app.memory.context_diff import build_context_snapshot, diff_snapshots
+from app.context.context_diff import build_context_snapshot, diff_snapshots
 
 
 def test_context_diff_is_deterministic() -> None:

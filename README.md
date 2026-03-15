@@ -71,22 +71,24 @@ This makes it easier to debug context reconstruction and understand why a specif
 ```mermaid
 flowchart LR
     A["Frontend Demo<br/>GitHub Pages"] --> B["FastAPI API"]
-    B --> C["Context Builder"]
-    C --> D["Redis<br/>Short-term memory"]
-    C --> E["PostgreSQL<br/>Sessions, messages, facts"]
-    C --> F["Retrieval layer"]
-    C --> G["Packed context"]
-    G --> H["LLM provider<br/>Mock or OpenAI"]
+    B --> C["Memory storage<br/>Redis + PostgreSQL"]
+    B --> D["Context engine"]
+    D --> E["Fact extractor"]
+    D --> F["Context scorer"]
+    D --> G["Context selector"]
+    D --> H["Context packer"]
+    C --> D
+    H --> I["LLM provider<br/>Mock or OpenAI"]
 ```
 
 ## Architecture Overview
 
 ### Backend
 
-- `POST /chat` loads or creates the session, reconstructs context, generates a response, persists messages, updates memory, and stores newly extracted facts
-- Redis holds recent messages, summaries, and task state for short-term continuity
+- `POST /chat` now follows an explicit pipeline: persist the user message, extract facts, retrieve memory, score context items, select the relevant context, pack the final prompt context, and generate the response
+- Redis holds recent messages, summaries, task state, and context snapshots for short-term continuity and observability
 - PostgreSQL stores sessions, messages, persistent facts, documents, and chunks
-- the retrieval abstraction keeps the MVP simple while leaving a clean path toward stronger semantic ranking
+- the context engine is separated from storage so scoring, selection, packing, and diffing stay easier to reason about and evolve
 
 ### Frontend
 

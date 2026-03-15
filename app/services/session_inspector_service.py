@@ -4,9 +4,9 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.context.context_diff import ContextSnapshot, diff_snapshots
+from app.context.context_selector import ContextSelector
 from app.db.models import Message, Session as ChatSession
-from app.memory.context_builder import ContextBuilder
-from app.memory.context_diff import ContextSnapshot, diff_snapshots
 from app.memory.redis_store import RedisMemoryStore
 from app.schemas.session import (
     ContextDiffPayload,
@@ -19,10 +19,10 @@ from app.schemas.session import (
 
 
 class SessionInspectorService:
-    def __init__(self, db: Session, memory_store: RedisMemoryStore, context_builder: ContextBuilder):
+    def __init__(self, db: Session, memory_store: RedisMemoryStore, context_selector: ContextSelector):
         self.db = db
         self.memory_store = memory_store
-        self.context_builder = context_builder
+        self.context_selector = context_selector
 
     def get_context(self, session_id: str) -> SessionContextResponse:
         session = self.db.scalar(select(ChatSession).where(ChatSession.id == session_id))
@@ -31,7 +31,14 @@ class SessionInspectorService:
 
         task_state = self.memory_store.get_task_state(session_id)
         retrieval_query = task_state.get("last_user_message") or self.memory_store.get_summary(session_id)
-        context = self.context_builder.build(self.db, session_id, retrieval_query or "")
+        retrieved_memory = self.context_selector.retrieve_memory(self.db, session_id, retrieval_query or "")
+        scored_items = self.context_selector.score_context(retrieval_query or "", retrieved_memory)
+        context = self.context_selector.select_context(
+            user_message=retrieval_query or "",
+            retrieved_memory=retrieved_memory,
+            scored_items=scored_items,
+            memory_enabled=True,
+        )
 
         message_rows = self.db.scalars(
             select(Message).where(Message.session_id == session_id).order_by(Message.created_at.asc(), Message.id.asc())

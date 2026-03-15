@@ -1,9 +1,10 @@
 from fastapi import Depends
 
+from app.context.context_scorer import ContextScorer
+from app.context.context_selector import ContextSelector
+from app.context.fact_extractor import FactExtractor
 from app.core.config import Settings, get_settings
 from app.db.session import get_db
-from app.memory.context_builder import ContextBuilder
-from app.memory.fact_extractor import FactExtractor
 from app.memory.redis_store import RedisMemoryStore
 from app.memory.summarizer import SessionSummarizer
 from app.retrieval.retriever import KeywordRetriever
@@ -23,17 +24,19 @@ def get_chat_service(
     memory_store: RedisMemoryStore = Depends(get_memory_store),
 ) -> ChatService:
     retriever = KeywordRetriever(limit=settings.retrieval_limit)
-    context_builder = ContextBuilder(
+    context_selector = ContextSelector(
         memory_store=memory_store,
         retriever=retriever,
+        scorer=ContextScorer(),
         recent_limit=settings.recent_message_limit,
+        chunk_limit=settings.retrieval_limit,
     )
     return ChatService(
         db=db,
         memory_store=memory_store,
         summarizer=SessionSummarizer(char_limit=settings.summary_char_limit),
         fact_extractor=FactExtractor(),
-        context_builder=context_builder,
+        context_selector=context_selector,
         llm_provider=build_llm_provider(settings),
         settings=settings,
     )
@@ -52,9 +55,11 @@ def get_session_inspector_service(
     memory_store: RedisMemoryStore = Depends(get_memory_store),
 ) -> SessionInspectorService:
     retriever = KeywordRetriever(limit=settings.retrieval_limit)
-    context_builder = ContextBuilder(
+    context_selector = ContextSelector(
         memory_store=memory_store,
         retriever=retriever,
+        scorer=ContextScorer(),
         recent_limit=settings.recent_message_limit,
+        chunk_limit=settings.retrieval_limit,
     )
-    return SessionInspectorService(db=db, memory_store=memory_store, context_builder=context_builder)
+    return SessionInspectorService(db=db, memory_store=memory_store, context_selector=context_selector)

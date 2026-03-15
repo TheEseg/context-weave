@@ -69,10 +69,10 @@ def test_context_diff_endpoint_compares_current_turn_with_previous(client) -> No
     assert second.status_code == 200
     assert third.status_code == 200
 
-    diff_response = client.get("/sessions/diff-demo/context-diff/3")
+    diff_response = client.get("/sessions/diff-demo/context-diff/2")
     assert diff_response.status_code == 200
 
     body = diff_response.json()
-    assert body["turn"] == 3
+    assert body["turn"] == 2
     assert any(item["value"] == "technology = FastAPI" for item in body["diff"]["added"])
     assert any(item["type"] == "fact" for item in body["diff"]["unchanged"])

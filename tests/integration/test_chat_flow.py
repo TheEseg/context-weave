@@ -70,5 +70,6 @@ def test_chat_endpoint_creates_context_snapshot(client, memory_store) -> None:
     assert len(snapshots) == 1
     assert snapshots[0]["turn"] == 1
     assert "Current user message:" in snapshots[0]["packed_context"]
-    assert snapshots[0]["facts"] == []
+    assert any(fact["fact_value"] == "FastAPI" for fact in snapshots[0]["facts"])
+    assert any(fact["fact_value"] == "Redis" for fact in snapshots[0]["facts"])
     assert snapshots[0]["recent_messages"] == []

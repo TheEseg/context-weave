@@ -9,11 +9,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.context.context_scorer import ContextScorer
+from app.context.context_selector import ContextSelector
+from app.context.fact_extractor import FactExtractor
 from app.core.config import Settings
 from app.core.dependencies import get_chat_service, get_db, get_memory_store, get_session_inspector_service
 from app.db.base import Base
-from app.memory.context_builder import ContextBuilder
-from app.memory.fact_extractor import FactExtractor
 from app.memory.redis_store import RedisMemoryStore
 from app.memory.summarizer import SessionSummarizer
 from app.retrieval.retriever import KeywordRetriever
@@ -68,13 +69,19 @@ def client(
 
     def override_chat_service() -> ChatService:
         retriever = KeywordRetriever(limit=3)
-        context_builder = ContextBuilder(memory_store=memory_store, retriever=retriever, recent_limit=6)
+        context_selector = ContextSelector(
+            memory_store=memory_store,
+            retriever=retriever,
+            scorer=ContextScorer(),
+            recent_limit=6,
+            chunk_limit=3,
+        )
         return ChatService(
             db=db_session,
             memory_store=memory_store,
             summarizer=SessionSummarizer(char_limit=400),
             fact_extractor=FactExtractor(),
-            context_builder=context_builder,
+            context_selector=context_selector,
             llm_provider=MockLLMProvider(),
             settings=test_settings,
         )
@@ -87,8 +94,14 @@ def client(
 
     def override_session_inspector_service() -> SessionInspectorService:
         retriever = KeywordRetriever(limit=3)
-        context_builder = ContextBuilder(memory_store=memory_store, retriever=retriever, recent_limit=6)
-        return SessionInspectorService(db=db_session, memory_store=memory_store, context_builder=context_builder)
+        context_selector = ContextSelector(
+            memory_store=memory_store,
+            retriever=retriever,
+            scorer=ContextScorer(),
+            recent_limit=6,
+            chunk_limit=3,
+        )
+        return SessionInspectorService(db=db_session, memory_store=memory_store, context_selector=context_selector)
 
     app.dependency_overrides[get_chat_service] = override_chat_service
     app.dependency_overrides[get_db] = override_db

@@ -6,11 +6,12 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.context.context_diff import build_context_snapshot
+from app.context.context_packer import ContextPack
+from app.context.context_selector import ContextSelector
+from app.context.fact_extractor import FactExtractor
 from app.core.config import Settings
 from app.db.models import Fact, Message, Session as ChatSession
-from app.memory.context_builder import ContextBuilder, ContextPack
-from app.memory.context_diff import build_context_snapshot
-from app.memory.fact_extractor import FactExtractor
 from app.memory.redis_store import RedisMemoryStore
 from app.memory.summarizer import SessionSummarizer
 from app.schemas.chat import ChatRequest, ChatResponse, ContextDebug
@@ -26,7 +27,7 @@ class ChatService:
         memory_store: RedisMemoryStore,
         summarizer: SessionSummarizer,
         fact_extractor: FactExtractor,
-        context_builder: ContextBuilder,
+        context_selector: ContextSelector,
         llm_provider: BaseLLMProvider,
         settings: Settings,
     ):
@@ -34,16 +35,28 @@ class ChatService:
         self.memory_store = memory_store
         self.summarizer = summarizer
         self.fact_extractor = fact_extractor
-        self.context_builder = context_builder
+        self.context_selector = context_selector
         self.llm_provider = llm_provider
         self.settings = settings
 
     def handle_chat(self, payload: ChatRequest) -> ChatResponse:
         session = self._get_or_create_session(payload.session_id, payload.user_id)
+        user_message = Message(session_id=session.id, role="user", content=payload.message)
+        self.db.add(user_message)
+        self.db.commit()
+
         if payload.memory_enabled:
-            context = self.context_builder.build(self.db, session.id, payload.message)
+            self._store_facts(payload.session_id, payload.user_id, payload.message)
+            retrieved_memory = self.context_selector.retrieve_memory(self.db, session.id, payload.message)
+            scored_items = self.context_selector.score_context(payload.message, retrieved_memory)
+            context = self.context_selector.select_context(
+                user_message=payload.message,
+                retrieved_memory=retrieved_memory,
+                scored_items=scored_items,
+                memory_enabled=True,
+            )
         else:
-            context = ContextPack.direct_message_only()
+            context = ContextPack.direct_message_only(payload.message)
 
         assistant_response = self.llm_provider.generate(
             payload.message,
@@ -51,9 +64,8 @@ class ChatService:
             memory_enabled=payload.memory_enabled,
         )
 
-        user_message = Message(session_id=session.id, role="user", content=payload.message)
         assistant_message = Message(session_id=session.id, role="assistant", content=assistant_response)
-        self.db.add_all([user_message, assistant_message])
+        self.db.add(assistant_message)
         self.db.commit()
 
         if payload.memory_enabled:
@@ -71,7 +83,6 @@ class ChatService:
             summary = self.summarizer.summarize(self.memory_store.get_summary(session.id), updated_recent)
             self.memory_store.set_summary(session.id, summary)
             self.memory_store.set_task_state(session.id, {"last_user_message": payload.message})
-            self._store_facts(payload.session_id, payload.user_id, payload.message)
 
         debug = ContextDebug(
             memory_enabled=payload.memory_enabled,

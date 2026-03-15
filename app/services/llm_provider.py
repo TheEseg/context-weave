@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from app.context.context_packer import ContextPack
 from app.core.config import Settings
-from app.memory.context_builder import ContextPack
 
 
 class BaseLLMProvider(ABC):

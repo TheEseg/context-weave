@@ -47,4 +47,3 @@ class FactExtractor:
         cleaned = raw.replace(".", "")
         parts = re.split(r",| and ", cleaned)
         return [part.strip() for part in parts if part.strip()]
-

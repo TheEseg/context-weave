@@ -1,4 +1,4 @@
-from app.memory.fact_extractor import FactExtractor
+from app.context.fact_extractor import FactExtractor
 
 
 def test_fact_extractor_captures_stack_and_named_values() -> None:
@@ -9,4 +9,3 @@ def test_fact_extractor_captures_stack_and_named_values() -> None:
     assert ("technology", "Redis") in pairs
     assert ("technology", "PostgreSQL") in pairs
     assert ("report_name", "rai_occulto") in pairs
-
