@@ -802,6 +802,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .diff-group-heading span {
@@ -824,6 +825,47 @@ button:disabled {
   background: rgba(120, 131, 145, 0.08);
 }
 
+.diff-group-collapsible {
+  opacity: 0.88;
+}
+
+.diff-group-summary {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.diff-group-summary::-webkit-details-marker {
+  display: none;
+}
+
+.diff-collapse-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.diff-group-collapsible[open] .diff-collapse-label::after {
+  content: " less";
+}
+
+.diff-group-collapsible:not([open]) .diff-collapse-label::after {
+  content: " more";
+}
+
+.diff-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .diff-list {
   display: flex;
   flex-direction: column;
@@ -842,6 +884,7 @@ button:disabled {
 
 .diff-row {
   border-left: 3px solid transparent;
+  padding-left: 14px;
 }
 
 .diff-row-added {
@@ -864,6 +907,8 @@ button:disabled {
 
 .diff-row-marker {
   width: 14px;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .diff-row p {
@@ -1295,6 +1340,10 @@ pre {
     align-items: flex-start;
   }
 
+  .diff-group-summary {
+    flex-direction: column;
+  }
+
   .timeline-item {
     grid-template-columns: 1fr;
   }
@@ -1374,6 +1423,10 @@ pre {
   .diff-row-top {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .diff-row {
+    padding-left: 12px;
   }
 
   .session-inline-card {

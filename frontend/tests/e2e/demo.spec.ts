@@ -35,7 +35,9 @@ test.describe("ContextWeave demo desktop", () => {
 
     await page.getByTestId("inspector-tab-diff").click();
     await expect(page.getByTestId("context-diff-section")).toContainText("These context elements changed since the previous turn.");
-    await expect(page.getByTestId("context-diff-section")).toContainText("Added");
+    await expect(page.getByTestId("diff-group-added")).toContainText(/Added \(\d+\)/);
+    await expect(page.getByTestId("diff-group-removed")).toContainText(/Removed \(\d+\)/);
+    await expect(page.getByTestId("diff-group-unchanged")).toContainText(/Unchanged \(\d+\)/);
   });
 
   test("sends a new message and keeps the inspector populated", async ({ page }) => {
@@ -126,6 +128,7 @@ test.describe("ContextWeave demo mobile", () => {
     await expect(page.getByTestId("chunks-section")).toBeVisible();
     await page.getByTestId("inspector-tab-diff").click();
     await expect(page.getByTestId("context-diff-section")).toBeVisible();
+    await expect(page.getByTestId("diff-group-added")).toBeVisible();
     await page.getByTestId("inspector-tab-budget").click();
     await expect(page.getByTestId("context-budget-section")).toBeVisible();
     await page.getByTestId("inspector-tab-prompt").click();
