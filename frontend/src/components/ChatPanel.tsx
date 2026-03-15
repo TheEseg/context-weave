@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 
 import { MessageList } from "./MessageList";
-import type { ChatMessage } from "../types";
+import type { ChatMessage, ContextDebug } from "../types";
 
 type ChatPanelProps = {
   sessionId: string;
@@ -9,14 +9,13 @@ type ChatPanelProps = {
   draftSessionId: string;
   draftUserId: string;
   messages: ChatMessage[];
+  debug: ContextDebug | null;
   loading: boolean;
   error: string | null;
   memoryEnabled: boolean;
   onSessionIdChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
-  onMemoryEnabledChange: (value: boolean) => void;
   onApplySession: () => void;
-  onResetSession: () => void;
   onLoadDemo: () => void;
   onSendMessage: (message: string) => Promise<void>;
 };
@@ -27,14 +26,13 @@ export function ChatPanel({
   draftSessionId,
   draftUserId,
   messages,
+  debug,
   loading,
   error,
   memoryEnabled,
   onSessionIdChange,
   onUserIdChange,
-  onMemoryEnabledChange,
   onApplySession,
-  onResetSession,
   onLoadDemo,
   onSendMessage,
 }: ChatPanelProps) {
@@ -52,7 +50,7 @@ export function ChatPanel({
 
   return (
     <section className="panel chat-panel" data-testid="chat-panel">
-      <div className="panel-heading">
+      <div className="panel-heading panel-heading-chat">
         <div>
           <p className="section-kicker">Conversation</p>
           <h2>Chat panel</h2>
@@ -60,9 +58,6 @@ export function ChatPanel({
             Use the demo session to show how earlier architecture decisions stay available in later turns.
           </p>
         </div>
-        <button className="secondary-button" data-testid="load-demo-session" onClick={onLoadDemo} type="button">
-          Load demo session
-        </button>
       </div>
 
       <div className="session-controls">
@@ -76,36 +71,12 @@ export function ChatPanel({
         </label>
       </div>
 
-      <div className="memory-toggle-row">
-        <span className="memory-toggle-label">Memory</span>
-        <div className="memory-toggle" data-testid="memory-toggle" role="group" aria-label="Memory mode">
-          <button
-            className={memoryEnabled ? "toggle-button toggle-button-active" : "toggle-button"}
-            data-testid="memory-on"
-            type="button"
-            onClick={() => onMemoryEnabledChange(true)}
-            aria-pressed={memoryEnabled}
-          >
-            ON
-          </button>
-          <button
-            className={!memoryEnabled ? "toggle-button toggle-button-active" : "toggle-button"}
-            data-testid="memory-off"
-            type="button"
-            onClick={() => onMemoryEnabledChange(false)}
-            aria-pressed={!memoryEnabled}
-          >
-            OFF
-          </button>
-        </div>
-      </div>
-
-      <div className="action-row">
+      <div className="action-row action-row-chat">
         <button className="secondary-button" data-testid="open-session" onClick={onApplySession} type="button">
           Open session
         </button>
-        <button className="ghost-button" data-testid="reset-session" onClick={onResetSession} type="button">
-          Reset session view
+        <button className="ghost-button" data-testid="load-demo-session" onClick={onLoadDemo} type="button">
+          Load demo session
         </button>
         <div className="session-badge">
           <span>Active</span>
@@ -115,7 +86,7 @@ export function ChatPanel({
         </div>
       </div>
 
-      <MessageList messages={messages} loading={loading} />
+      <MessageList messages={messages} debug={debug} loading={loading} />
 
       {error ? <div className="error-banner">{error}</div> : null}
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { API_BASE_URL, DEMO_MODE, getContextDiff, getHealth, getSessionContext, sendChatMessage } from "./api/client";
 import { ChatPanel } from "./components/ChatPanel";
+import { ContextTimeline } from "./components/ContextTimeline";
 import { ContextInspector } from "./components/ContextInspector";
 import { Header } from "./components/Header";
 import type { ContextDebug, ContextDiffResponse, SessionContext } from "./types";
@@ -125,24 +126,33 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Header healthStatus={healthStatus} apiBaseUrl={API_BASE_URL} demoMode={DEMO_MODE} />
+      <Header
+        healthStatus={healthStatus}
+        apiBaseUrl={API_BASE_URL}
+        demoMode={DEMO_MODE}
+        sessionId={sessionId}
+        userId={userId}
+        memoryEnabled={memoryEnabled}
+        onMemoryEnabledChange={setMemoryEnabled}
+        onResetSession={handleResetSession}
+      />
 
-      <main className="main-layout">
+      <main className="app-content">
+        <section className="main-layout">
         <ChatPanel
           sessionId={sessionId}
           userId={userId}
           draftSessionId={draftSessionId}
           draftUserId={draftUserId}
           messages={context?.messages ?? []}
+          debug={latestDebug}
           loading={chatLoading}
           error={chatError}
           onSessionIdChange={setDraftSessionId}
           onUserIdChange={setDraftUserId}
           onApplySession={handleApplySession}
-          onResetSession={handleResetSession}
           onLoadDemo={handleLoadDemo}
           memoryEnabled={memoryEnabled}
-          onMemoryEnabledChange={setMemoryEnabled}
           onSendMessage={handleSendMessage}
         />
 
@@ -155,6 +165,9 @@ export default function App() {
           error={contextError}
           contextDiffError={contextDiffError}
         />
+        </section>
+
+        <ContextTimeline context={context} contextDiff={contextDiff} />
       </main>
 
       <footer className="app-footer">

@@ -8,8 +8,10 @@ test.describe("ContextWeave demo desktop", () => {
   });
 
   test("loads the main app shell", async ({ page }) => {
+    await expect(page.getByTestId("app-header")).toBeVisible();
     await expect(page.getByTestId("chat-panel")).toBeVisible();
     await expect(page.getByTestId("context-inspector")).toBeVisible();
+    await expect(page.getByTestId("context-timeline")).toBeVisible();
     await expect(page.getByLabel("Session ID")).toBeVisible();
     await expect(page.getByLabel("User ID")).toBeVisible();
     await expect(page.getByTestId("memory-toggle")).toBeVisible();
@@ -23,6 +25,7 @@ test.describe("ContextWeave demo desktop", () => {
     await page.getByTestId("load-demo-session").click();
 
     await expect(page.getByTestId("chat-panel").getByText("What architecture did we decide for ContextWeave?")).toBeVisible();
+    await expect(page.getByTestId("timeline-turn").first()).toBeVisible();
     await expect(page.getByTestId("inspector-tab-memory")).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("summary-section")).toContainText("FastAPI");
     await expect(page.getByTestId("facts-section")).toContainText("GitHub Pages");
@@ -41,6 +44,7 @@ test.describe("ContextWeave demo desktop", () => {
       page.getByTestId("chat-panel").getByText("Please remember that the architecture also includes FastAPI."),
     ).toBeVisible();
     await expect(page.getByTestId("message-assistant").last()).toContainText(/FastAPI|remembered context|Grounded mock response/);
+    await expect(page.getByText("Context used")).toBeVisible();
     await expect(page.getByTestId("inspector-tab-memory")).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("facts-section")).toContainText("FastAPI");
     await expect(page.getByTestId("summary-section")).not.toBeEmpty();
@@ -92,6 +96,7 @@ test.describe("ContextWeave demo mobile", () => {
 
     await expect(page.getByTestId("chat-panel").getByText("What architecture did we decide for ContextWeave?")).toBeVisible();
     await page.getByTestId("context-inspector").scrollIntoViewIfNeeded();
+    await expect(page.getByTestId("context-timeline")).toBeVisible();
 
     await expect(page.getByTestId("summary-section")).toBeVisible();
     await expect(page.getByTestId("facts-section")).toBeVisible();
