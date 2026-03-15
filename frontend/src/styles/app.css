@@ -448,14 +448,41 @@ button:disabled {
   gap: 14px;
 }
 
-.inspector-card {
+.inspector-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.inspector-tab {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 14px;
+  min-height: 42px;
+}
+
+.inspector-tab-active {
+  color: #07131f;
+  background: linear-gradient(135deg, rgba(127, 223, 255, 0.9), rgba(46, 143, 255, 0.94));
+}
+
+.tab-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.inspector-card-panel {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   padding: 16px;
 }
 
-.card-header {
+.inspector-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -547,6 +574,7 @@ button:disabled {
 .chunk-meta span,
 .metadata-grid dt,
 .recent-list span,
+.signal-card span,
 .muted {
   color: var(--muted);
 }
@@ -573,10 +601,28 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .diff-group h4 {
   margin: 0;
+}
+
+.diff-group-added {
+  border: 1px solid rgba(99, 213, 141, 0.28);
+  background: rgba(55, 140, 84, 0.12);
+}
+
+.diff-group-removed {
+  border: 1px solid rgba(255, 122, 122, 0.24);
+  background: rgba(169, 54, 54, 0.12);
+}
+
+.diff-group-unchanged {
+  border: 1px solid rgba(187, 198, 210, 0.14);
+  background: rgba(120, 131, 145, 0.08);
 }
 
 .diff-list {
@@ -607,6 +653,21 @@ button:disabled {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 0 0 14px;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.signal-card {
+  border-radius: 14px;
+  background: rgba(7, 12, 18, 0.36);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .metadata-grid dd,
@@ -701,6 +762,7 @@ pre {
 
   .session-controls,
   .metadata-grid,
+  .signal-grid,
   .diff-columns {
     grid-template-columns: 1fr;
   }
@@ -806,6 +868,16 @@ pre {
     margin-top: 2px;
   }
 
+  .inspector-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .inspector-tab {
+    flex: 0 0 auto;
+  }
+
   .inspector-section-summary {
     padding: 14px;
   }
@@ -867,7 +939,9 @@ pre {
 
   .fact-list li,
   .chunk-item,
-  .recent-list li {
+  .recent-list li,
+  .diff-list li,
+  .signal-card {
     padding: 10px 11px;
   }
 

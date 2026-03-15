@@ -23,9 +23,12 @@ test.describe("ContextWeave demo desktop", () => {
     await page.getByTestId("load-demo-session").click();
 
     await expect(page.getByTestId("chat-panel").getByText("What architecture did we decide for ContextWeave?")).toBeVisible();
+    await expect(page.getByTestId("inspector-tab-memory")).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("summary-section")).toContainText("FastAPI");
     await expect(page.getByTestId("facts-section")).toContainText("GitHub Pages");
     await expect(page.getByTestId("chunks-section")).toContainText("Railway");
+
+    await page.getByTestId("inspector-tab-diff").click();
     await expect(page.getByTestId("context-diff-section")).toContainText("These context elements changed since the previous turn.");
   });
 
@@ -38,6 +41,7 @@ test.describe("ContextWeave demo desktop", () => {
       page.getByTestId("chat-panel").getByText("Please remember that the architecture also includes FastAPI."),
     ).toBeVisible();
     await expect(page.getByTestId("message-assistant").last()).toContainText(/FastAPI|remembered context|Grounded mock response/);
+    await expect(page.getByTestId("inspector-tab-memory")).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("facts-section")).toContainText("FastAPI");
     await expect(page.getByTestId("summary-section")).not.toBeEmpty();
   });
@@ -52,6 +56,7 @@ test.describe("ContextWeave demo desktop", () => {
     await expect(page.getByTestId("message-assistant").last()).toContainText("Memory is off");
     await expect(page.getByTestId("summary-section")).toContainText("Disabled for this turn");
     await expect(page.getByTestId("facts-section")).toContainText("Persistent facts were not pulled");
+    await page.getByTestId("inspector-tab-prompt").click();
     await expect(page.getByTestId("packed-context-section")).toContainText("Current user message:");
   });
 });
@@ -91,6 +96,7 @@ test.describe("ContextWeave demo mobile", () => {
     await expect(page.getByTestId("summary-section")).toBeVisible();
     await expect(page.getByTestId("facts-section")).toBeVisible();
     await expect(page.getByTestId("chunks-section")).toBeVisible();
+    await page.getByTestId("inspector-tab-prompt").click();
     await expect(page.getByTestId("packed-context-section")).toBeVisible();
 
     const loadDemoBox = await page.getByTestId("load-demo-session").boundingBox();

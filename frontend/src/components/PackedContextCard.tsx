@@ -1,5 +1,3 @@
-import { InspectorSection } from "./InspectorSection";
-
 type PackedContextCardProps = {
   packedContext: string;
   contextLengthChars?: number;
@@ -12,17 +10,16 @@ export function PackedContextCard({
   memoryEnabled,
 }: PackedContextCardProps) {
   return (
-    <InspectorSection
-      title="Final packed context"
-      subtitle="Context debugger"
-      meta={
+    <section className="inspector-card-panel" data-testid="packed-context-section">
+      <div className="inspector-card-header">
+        <div>
+          <p className="section-kicker">Context debugger</p>
+          <h3>Final packed context</h3>
+        </div>
         <span className="card-tag">
           {contextLengthChars !== undefined ? `${contextLengthChars} chars` : memoryEnabled ? "Live pack" : "Current message only"}
         </span>
-      }
-      defaultOpen={false}
-      testId="packed-context-section"
-    >
+      </div>
       {packedContext ? (
         <div className="packed-context-block">
           <p className="packed-context-meta">
@@ -35,6 +32,6 @@ export function PackedContextCard({
           Send a message to inspect the final packed context that ContextWeave assembled for the provider.
         </p>
       )}
-    </InspectorSection>
+    </section>
   );
 }

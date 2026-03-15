@@ -1,5 +1,4 @@
-import type { ChatMessage } from "../types";
-import { InspectorSection } from "./InspectorSection";
+import type { ChatMessage, ContextDebug } from "../types";
 
 type DebugCardProps = {
   sessionId: string;
@@ -8,6 +7,8 @@ type DebugCardProps = {
   recentMessages: ChatMessage[];
   taskState: Record<string, string>;
   memoryEnabled: boolean;
+  debug: ContextDebug | null;
+  latestTurn?: number;
 };
 
 export function DebugCard({
@@ -17,17 +18,28 @@ export function DebugCard({
   recentMessages,
   taskState,
   memoryEnabled,
+  debug,
+  latestTurn,
 }: DebugCardProps) {
   const taskStateKeys = Object.keys(taskState);
+  const scoringSignals = [
+    { label: "Summary signal", value: debug?.session_summary ? "present" : "none" },
+    { label: "Fact signal", value: `${debug?.retrieved_facts.length ?? 0} facts` },
+    { label: "Retrieval signal", value: `${debug?.retrieved_chunks.length ?? 0} chunks` },
+    { label: "Recent-turn signal", value: `${recentMessages.length} messages` },
+    { label: "Packed size", value: `${debug?.context_length_chars ?? 0} chars` },
+    { label: "Latest turn", value: String(latestTurn ?? 0) },
+  ];
 
   return (
-    <InspectorSection
-      title="Debug metadata"
-      subtitle="Inspector"
-      meta={<span className="card-tag">{memoryEnabled ? `${recentMessages.length} recent` : "Memory bypassed"}</span>}
-      defaultOpen={false}
-      testId="debug-section"
-    >
+    <section className="inspector-card-panel" data-testid="debug-section">
+      <div className="inspector-card-header">
+        <div>
+          <p className="section-kicker">Inspector</p>
+          <h3>Debug metadata</h3>
+        </div>
+        <span className="card-tag">{memoryEnabled ? `${recentMessages.length} recent` : "Memory bypassed"}</span>
+      </div>
       <dl className="metadata-grid">
         <div>
           <dt>Session</dt>
@@ -50,6 +62,18 @@ export function DebugCard({
           <dd>{recentMessages.length}</dd>
         </div>
       </dl>
+
+      <div className="subsection">
+        <h4>Scoring signals</h4>
+        <div className="signal-grid">
+          {scoringSignals.map((signal) => (
+            <div key={signal.label} className="signal-card">
+              <span>{signal.label}</span>
+              <strong>{signal.value}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="subsection">
         <h4>Task state</h4>
@@ -79,6 +103,11 @@ export function DebugCard({
           </ul>
         )}
       </div>
-    </InspectorSection>
+
+      <div className="subsection">
+        <h4>Raw debug payload</h4>
+        <pre>{JSON.stringify(debug, null, 2)}</pre>
+      </div>
+    </section>
   );
 }

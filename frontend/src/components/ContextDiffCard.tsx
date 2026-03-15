@@ -1,5 +1,4 @@
 import type { ContextDiffResponse } from "../types";
-import { InspectorSection } from "./InspectorSection";
 
 type ContextDiffCardProps = {
   contextDiff: ContextDiffResponse | null;
@@ -12,13 +11,14 @@ export function ContextDiffCard({ contextDiff }: ContextDiffCardProps) {
   const total = added.length + removed.length + unchanged.length;
 
   return (
-    <InspectorSection
-      title="Context Diff"
-      subtitle="Observability"
-      meta={<span className="card-tag">{contextDiff ? `Turn ${contextDiff.turn}` : "Awaiting turn data"}</span>}
-      defaultOpen={true}
-      testId="context-diff-section"
-    >
+    <section className="inspector-card-panel" data-testid="context-diff-section">
+      <div className="inspector-card-header">
+        <div>
+          <p className="section-kicker">Observability</p>
+          <h3>Context Diff</h3>
+        </div>
+        <span className="card-tag">{contextDiff ? `Turn ${contextDiff.turn}` : "Awaiting turn data"}</span>
+      </div>
       {!contextDiff ? (
         <p className="card-body">Send at least one message to compare the current packed context with the previous turn.</p>
       ) : (
@@ -27,22 +27,22 @@ export function ContextDiffCard({ contextDiff }: ContextDiffCardProps) {
           {total === 0 ? <p className="card-body">No context changes were detected between the last two turns.</p> : null}
 
           <div className="diff-columns">
-            <div className="diff-group">
+            <div className="diff-group diff-group-added">
               <h4>* Added</h4>
               {added.length === 0 ? <p className="card-body muted">No added elements.</p> : <DiffList items={added} />}
             </div>
-            <div className="diff-group">
+            <div className="diff-group diff-group-removed">
               <h4>- Removed</h4>
               {removed.length === 0 ? <p className="card-body muted">No removed elements.</p> : <DiffList items={removed} />}
             </div>
-            <div className="diff-group">
+            <div className="diff-group diff-group-unchanged">
               <h4>• Unchanged</h4>
               {unchanged.length === 0 ? <p className="card-body muted">No unchanged elements.</p> : <DiffList items={unchanged} />}
             </div>
           </div>
         </div>
       )}
-    </InspectorSection>
+    </section>
   );
 }
 

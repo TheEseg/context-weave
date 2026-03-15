@@ -1,5 +1,4 @@
 import type { SessionChunk } from "../types";
-import { InspectorSection } from "./InspectorSection";
 
 type ChunksCardProps = {
   chunks: SessionChunk[];
@@ -8,12 +7,14 @@ type ChunksCardProps = {
 
 export function ChunksCard({ chunks, memoryEnabled }: ChunksCardProps) {
   return (
-    <InspectorSection
-      title="Relevant chunks"
-      subtitle="Retrieval"
-      meta={<span className="card-tag">{memoryEnabled ? `${chunks.length} matched` : "Disabled"}</span>}
-      testId="chunks-section"
-    >
+    <section className="inspector-card-panel" data-testid="chunks-section">
+      <div className="inspector-card-header">
+        <div>
+          <p className="section-kicker">Retrieval</p>
+          <h3>Relevant chunks</h3>
+        </div>
+        <span className="card-tag">{memoryEnabled ? `${chunks.length} matched` : "Disabled"}</span>
+      </div>
       {!memoryEnabled ? (
         <p className="card-body">Disabled for this turn. Retrieval was bypassed and no document chunks were packed.</p>
       ) : chunks.length === 0 ? (
@@ -31,6 +32,6 @@ export function ChunksCard({ chunks, memoryEnabled }: ChunksCardProps) {
           ))}
         </div>
       )}
-    </InspectorSection>
+    </section>
   );
 }
